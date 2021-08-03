@@ -186,11 +186,13 @@ bool MapSaver::saveMapTopicToFile(
       map_topic_loc, map_qos, mapCallback);
 
     rclcpp::Time start_time = now();
+    std::size_t map_saved_max_tries = 1000;
+    std::size_t i = 0;
     while (rclcpp::ok()) {
-      if ((now() - start_time) > *save_map_timeout_) {
-        RCLCPP_ERROR(get_logger(), "Failed to save the map: timeout");
-        return false;
-      }
+      // if ((now() - start_time) > *save_map_timeout_) {
+      //   RCLCPP_ERROR(get_logger(), "Failed to save the map: timeout");
+      //   return false;
+      // }
 
       if (map_msg) {
         // Map message received. Saving it to file
@@ -198,8 +200,11 @@ bool MapSaver::saveMapTopicToFile(
           RCLCPP_INFO(get_logger(), "Map saved successfully");
           return true;
         } else {
-          RCLCPP_ERROR(get_logger(), "Failed to save the map");
-          return false;
+          if (i >= map_saved_max_tries) {
+            RCLCPP_INFO(get_logger(), "Failed to save map...");
+            return false;
+          }
+          ++i;
         }
       }
 
