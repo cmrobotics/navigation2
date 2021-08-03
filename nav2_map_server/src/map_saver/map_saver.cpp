@@ -48,6 +48,8 @@ MapSaver::MapSaver()
   save_map_timeout_ = std::make_shared<rclcpp::Duration>(
     std::chrono::milliseconds(declare_parameter("save_map_timeout", 2000)));
 
+  save_map_tries_ = declare_parameters("save_map_tries", 100);
+
   free_thresh_default_ = declare_parameter("free_thresh_default", 0.25),
   occupied_thresh_default_ = declare_parameter("occupied_thresh_default", 0.65);
   // false only of foxy for backwards compatibility
@@ -186,8 +188,7 @@ bool MapSaver::saveMapTopicToFile(
       map_topic_loc, map_qos, mapCallback);
 
     rclcpp::Time start_time = now();
-    std::size_t map_saved_max_tries = 1000;
-    std::size_t i = 0;
+    unsigned int i = 0;
     while (rclcpp::ok()) {
       // if ((now() - start_time) > *save_map_timeout_) {
       //   RCLCPP_ERROR(get_logger(), "Failed to save the map: timeout");
@@ -200,7 +201,7 @@ bool MapSaver::saveMapTopicToFile(
           RCLCPP_INFO(get_logger(), "Map saved successfully");
           return true;
         } else {
-          if (i >= map_saved_max_tries) {
+          if (i >= save_map_tries_) {
             RCLCPP_INFO(get_logger(), "Failed to save map...");
             return false;
           }

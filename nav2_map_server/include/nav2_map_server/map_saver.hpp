@@ -105,6 +105,7 @@ protected:
   double occupied_thresh_default_;
   // param for handling QoS configuration
   bool map_subscribe_transient_local_;
+  unsigned int save_map_tries_;
 
   // The name of the service for saving a map from topic
   const std::string save_map_service_name_{"save_map"};
