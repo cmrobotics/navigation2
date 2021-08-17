@@ -531,8 +531,8 @@ AmclNode::globalLocalizationCallback(
 void
 AmclNode::selectiveLocalizationCallback(
   const std::shared_ptr<rmw_request_id_t>/*request_header*/,
-  const std::shared_ptr<std_srvs::srv::Empty::Request>/*req*/,
-  std::shared_ptr<std_srvs::srv::Empty::Response>/*res*/)
+  const std::shared_ptr<nav2_msgs::srv::SelectLocations::Request>/*req*/,
+  std::shared_ptr<nav2_msgs::srv::SelectLocations::Response>/*res*/)
 {
   RCLCPP_INFO(get_logger(), "Initializing with povided locations and uniform distribution orientation");
   pf_init_model(
@@ -1318,7 +1318,7 @@ AmclNode::initServices()
     "reinitialize_global_localization",
     std::bind(&AmclNode::globalLocalizationCallback, this, _1, _2, _3));
 
-  selective_loc_srv_ = create_service<std_srvs::srv::Empty>(
+  selective_loc_srv_ = create_service<nav2_msgs::srv::SelectLocations>(
     "reinitialize_selective_localization",
     std::bind(&AmclNode::selectiveLocalizationCallback, this, _1, _2, _3));
 

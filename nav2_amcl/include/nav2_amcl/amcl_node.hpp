@@ -28,6 +28,7 @@
 #include <utility>
 #include <vector>
 
+
 #include "geometry_msgs/msg/pose_array.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "message_filters/subscriber.h"
@@ -35,6 +36,7 @@
 #include "nav2_amcl/motion_model/motion_model.hpp"
 #include "nav2_amcl/sensors/laser/laser.hpp"
 #include "nav2_msgs/msg/particle.hpp"
+#include "nav2_msgs/srv/select_locations.hpp"
 #include "nav2_msgs/msg/particle_cloud.hpp"
 #include "nav_msgs/srv/set_map.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
@@ -131,11 +133,11 @@ protected:
     const std::shared_ptr<std_srvs::srv::Empty::Request> request,
     std::shared_ptr<std_srvs::srv::Empty::Response> response);
 
-  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr selective_loc_srv_;
+  rclcpp::Service<nav2_msgs::srv::SelectLocations>::SharedPtr selective_loc_srv_;
   void selectiveLocalizationCallback(
-  const std::shared_ptr<rmw_request_id_t>/*request_header*/,
-  const std::shared_ptr<std_srvs::srv::Empty::Request>/*req*/,
-  std::shared_ptr<std_srvs::srv::Empty::Response>/*res*/);
+    const std::shared_ptr<rmw_request_id_t>/*request_header*/,
+    const std::shared_ptr<nav2_msgs::srv::SelectLocations::Request>/*req*/,
+    std::shared_ptr<nav2_msgs::srv::SelectLocations::Response>/*res*/);
 
   // Let amcl update samples without requiring motion
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr nomotion_update_srv_;
