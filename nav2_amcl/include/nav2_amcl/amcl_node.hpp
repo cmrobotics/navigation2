@@ -41,7 +41,7 @@
 #include "std_srvs/srv/empty.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
-
+#include <functional>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wreorder"
@@ -94,7 +94,7 @@ protected:
 #if NEW_UNIFORM_SAMPLING
   static std::vector<std::pair<int, int>> free_space_indices;
 #endif
-
+//typedef std::function<pf_vector_t(void*)> PfInitiModelFunctionType;
   // Transforms
   void initTransforms();
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
@@ -131,6 +131,12 @@ protected:
     const std::shared_ptr<std_srvs::srv::Empty::Request> request,
     std::shared_ptr<std_srvs::srv::Empty::Response> response);
 
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr selective_loc_srv_;
+  void selectiveLocalizationCallback(
+  const std::shared_ptr<rmw_request_id_t>/*request_header*/,
+  const std::shared_ptr<std_srvs::srv::Empty::Request>/*req*/,
+  std::shared_ptr<std_srvs::srv::Empty::Response>/*res*/);
+
   // Let amcl update samples without requiring motion
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr nomotion_update_srv_;
   void nomotionUpdateCallback(
@@ -159,6 +165,7 @@ protected:
   void initParticleFilter();
   // Pose-generating function used to uniformly distribute particles over the map
   static pf_vector_t uniformPoseGenerator(void * arg);
+  static pf_vector_t selectivePoseGenerator(void * arg);
   pf_t * pf_{nullptr};
   bool pf_init_;
   pf_vector_t pf_odom_pose_;

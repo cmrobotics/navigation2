@@ -499,6 +499,18 @@ AmclNode::uniformPoseGenerator(void * arg)
   return p;
 }
 
+pf_vector_t
+AmclNode::selectivePoseGenerator(void * arg)
+{
+  map_t * map = reinterpret_cast<map_t *>(arg);
+  std::pair<int, int> free_point = std::make_pair (10,20);
+  pf_vector_t p;
+  p.v[0] = MAP_WXGX(map, free_point.first);
+  p.v[1] = MAP_WYGY(map, free_point.second);
+  p.v[2] = drand48() * 2 * M_PI - M_PI;
+  return p;
+}
+
 void
 AmclNode::globalLocalizationCallback(
   const std::shared_ptr<rmw_request_id_t>/*request_header*/,
@@ -514,6 +526,23 @@ AmclNode::globalLocalizationCallback(
   initial_pose_is_known_ = true;
   pf_init_ = false;
 }
+
+
+void
+AmclNode::selectiveLocalizationCallback(
+  const std::shared_ptr<rmw_request_id_t>/*request_header*/,
+  const std::shared_ptr<std_srvs::srv::Empty::Request>/*req*/,
+  std::shared_ptr<std_srvs::srv::Empty::Response>/*res*/)
+{
+  RCLCPP_INFO(get_logger(), "Initializing with povided locations and uniform distribution orientation");
+  pf_init_model(
+    pf_, (pf_init_model_fn_t)AmclNode::selectivePoseGenerator,
+    reinterpret_cast<void *>(map_));
+  RCLCPP_INFO(get_logger(), "Selective initialisation done!");
+  initial_pose_is_known_ = true;
+  pf_init_ = false;
+}
+
 
 // force nomotion updates (amcl updating without requiring motion)
 void
@@ -1288,6 +1317,10 @@ AmclNode::initServices()
   global_loc_srv_ = create_service<std_srvs::srv::Empty>(
     "reinitialize_global_localization",
     std::bind(&AmclNode::globalLocalizationCallback, this, _1, _2, _3));
+
+  selective_loc_srv_ = create_service<std_srvs::srv::Empty>(
+    "reinitialize_selective_localization",
+    std::bind(&AmclNode::selectiveLocalizationCallback, this, _1, _2, _3));
 
   nomotion_update_srv_ = create_service<std_srvs::srv::Empty>(
     "request_nomotion_update",
