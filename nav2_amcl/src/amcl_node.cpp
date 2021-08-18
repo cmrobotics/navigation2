@@ -224,6 +224,10 @@ AmclNode::AmclNode()
   add_parameter(
     "map_topic", rclcpp::ParameterValue("map"),
     "Topic to subscribe to in order to receive the map to localize on");
+
+  add_parameter(
+    "selective_search_radius", rclcpp::ParameterValue(1.0),
+    "Search radius from position when using selective initialization");
 }
 
 AmclNode::~AmclNode()
@@ -431,6 +435,7 @@ AmclNode::checkElapsedTime(std::chrono::seconds check_interval, rclcpp::Time las
 std::vector<std::pair<int, int>> AmclNode::free_space_indices;
 #endif
 std::optional<std::vector<nav2_msgs::msg::Location>> optional_locations;
+double selective_search_radius;
 
 bool
 AmclNode::getOdomPose(
@@ -511,8 +516,8 @@ AmclNode::selectivePoseGenerator(void * arg)
     std::vector<nav2_msgs::msg::Location> locations = *optional_locations;
     pf_vector_t particle;
     auto location = *select_randomly(locations.begin(), locations.end());
-    particle.v[0] = MAP_WXGX(map, location.x);
-    particle.v[1] = MAP_WYGY(map, location.y);
+    particle.v[0] = MAP_WXGX(map, location.x + (int)( ( 2.0 * (drand48() - 0.5) ) * selective_search_radius ) );
+    particle.v[1] = MAP_WXGX(map, location.y + (int)( ( 2.0 * (drand48() - 0.5) ) * selective_search_radius ) );
     particle.v[2] = drand48() * 2 * M_PI - M_PI;
     return particle;
   } else {
@@ -537,14 +542,14 @@ AmclNode::globalLocalizationCallback(
 }
 
 template<typename Iter, typename RandomGenerator>
-static Iter AmclNode::select_randomly(Iter start, Iter end, RandomGenerator& g) {
+Iter AmclNode::select_randomly(Iter start, Iter end, RandomGenerator& g) {
     std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
     std::advance(start, dis(g));
     return start;
 }
 
 template<typename Iter>
-static Iter AmclNode::select_randomly(Iter start, Iter end) {
+Iter AmclNode::select_randomly(Iter start, Iter end) {
     static std::random_device rd;
     static std::mt19937 gen(rd());
     return select_randomly(start, end, gen);
@@ -557,6 +562,7 @@ AmclNode::selectiveLocalizationCallback(
   std::shared_ptr<nav2_msgs::srv::SelectLocations::Response> /*response*/)
 {
   optional_locations = { request->locations };
+  selective_search_radius = selective_search_radius_;
   RCLCPP_INFO(get_logger(), "Initializing with povided locations and uniform distribution orientation");
   pf_init_model(
     pf_, (pf_init_model_fn_t)AmclNode::selectivePoseGenerator,
@@ -1153,6 +1159,7 @@ AmclNode::initParameters()
   get_parameter("always_reset_initial_pose", always_reset_initial_pose_);
   get_parameter("scan_topic", scan_topic_);
   get_parameter("map_topic", map_topic_);
+  get_parameter("selective_search_radius", selective_search_radius_);
 
   save_pose_period_ = tf2::durationFromSec(1.0 / save_pose_rate);
   transform_tolerance_ = tf2::durationFromSec(tmp_tol);

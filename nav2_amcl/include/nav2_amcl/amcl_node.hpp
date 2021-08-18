@@ -96,7 +96,6 @@ protected:
 #if NEW_UNIFORM_SAMPLING
   static std::vector<std::pair<int, int>> free_space_indices;
 #endif
-//typedef std::function<pf_vector_t(void*)> PfInitiModelFunctionType;
   // Transforms
   void initTransforms();
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
@@ -262,6 +261,7 @@ protected:
   double z_rand_;
   std::string scan_topic_{"scan"};
   std::string map_topic_{"map"};
+  double selective_search_radius_;
 };
 
 }  // namespace nav2_amcl
