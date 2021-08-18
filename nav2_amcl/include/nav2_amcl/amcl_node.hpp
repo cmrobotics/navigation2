@@ -27,7 +27,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-
+#include <optional>
 
 #include "geometry_msgs/msg/pose_array.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -138,7 +138,10 @@ protected:
     const std::shared_ptr<rmw_request_id_t>/*request_header*/,
     const std::shared_ptr<nav2_msgs::srv::SelectLocations::Request>/*req*/,
     std::shared_ptr<nav2_msgs::srv::SelectLocations::Response>/*res*/);
-
+  template<typename Iter, typename RandomGenerator>
+  static Iter select_randomly(Iter start, Iter end, RandomGenerator& g);
+  template<typename Iter>
+  static Iter select_randomly(Iter start, Iter end);
   // Let amcl update samples without requiring motion
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr nomotion_update_srv_;
   void nomotionUpdateCallback(

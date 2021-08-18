@@ -27,7 +27,10 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <random>
+#include <iterator>
 
+#include "nav2_msgs/msg/location.hpp"
 #include "message_filters/subscriber.h"
 #include "nav2_amcl/angleutils.hpp"
 #include "nav2_util/geometry_utils.hpp"
@@ -427,6 +430,7 @@ AmclNode::checkElapsedTime(std::chrono::seconds check_interval, rclcpp::Time las
 #if NEW_UNIFORM_SAMPLING
 std::vector<std::pair<int, int>> AmclNode::free_space_indices;
 #endif
+std::optional<std::vector<nav2_msgs::msg::Location>> optional_locations;
 
 bool
 AmclNode::getOdomPose(
@@ -503,12 +507,17 @@ pf_vector_t
 AmclNode::selectivePoseGenerator(void * arg)
 {
   map_t * map = reinterpret_cast<map_t *>(arg);
-  std::pair<int, int> free_point = std::make_pair (10,20);
-  pf_vector_t p;
-  p.v[0] = MAP_WXGX(map, free_point.first);
-  p.v[1] = MAP_WYGY(map, free_point.second);
-  p.v[2] = drand48() * 2 * M_PI - M_PI;
-  return p;
+  if(optional_locations) {
+    std::vector<nav2_msgs::msg::Location> locations = *optional_locations;
+    pf_vector_t particle;
+    auto location = *select_randomly(locations.begin(), locations.end());
+    particle.v[0] = MAP_WXGX(map, location.x);
+    particle.v[1] = MAP_WYGY(map, location.y);
+    particle.v[2] = drand48() * 2 * M_PI - M_PI;
+    return particle;
+  } else {
+    return AmclNode::uniformPoseGenerator(arg);
+  }
 }
 
 void
@@ -527,13 +536,27 @@ AmclNode::globalLocalizationCallback(
   pf_init_ = false;
 }
 
+template<typename Iter, typename RandomGenerator>
+static Iter AmclNode::select_randomly(Iter start, Iter end, RandomGenerator& g) {
+    std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
+    std::advance(start, dis(g));
+    return start;
+}
+
+template<typename Iter>
+static Iter AmclNode::select_randomly(Iter start, Iter end) {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    return select_randomly(start, end, gen);
+}
 
 void
 AmclNode::selectiveLocalizationCallback(
-  const std::shared_ptr<rmw_request_id_t>/*request_header*/,
-  const std::shared_ptr<nav2_msgs::srv::SelectLocations::Request>/*req*/,
-  std::shared_ptr<nav2_msgs::srv::SelectLocations::Response>/*res*/)
+  const std::shared_ptr<rmw_request_id_t> /*request_header*/,
+  const std::shared_ptr<nav2_msgs::srv::SelectLocations::Request> request,
+  std::shared_ptr<nav2_msgs::srv::SelectLocations::Response> /*response*/)
 {
+  optional_locations = { request->locations };
   RCLCPP_INFO(get_logger(), "Initializing with povided locations and uniform distribution orientation");
   pf_init_model(
     pf_, (pf_init_model_fn_t)AmclNode::selectivePoseGenerator,
