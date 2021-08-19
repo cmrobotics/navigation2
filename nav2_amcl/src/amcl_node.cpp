@@ -518,8 +518,8 @@ AmclNode::selectivePoseGenerator(void * arg)
     std::vector<nav2_msgs::msg::Location> locations = *optional_locations;
     pf_vector_t particle;
     auto location = *select_randomly(locations.begin(), locations.end(), random_generator);
-    particle.v[0] = MAP_WXGX(map, location.x + (int)( ( 2.0 * (drand48() - 0.5) ) * selective_search_radius ) );
-    particle.v[1] = MAP_WXGX(map, location.y + (int)( ( 2.0 * (drand48() - 0.5) ) * selective_search_radius ) );
+    particle.v[0] = location.x + ( ( 2.0 * (drand48() - 0.5) ) * selective_search_radius );
+    particle.v[1] = location.y + ( ( 2.0 * (drand48() - 0.5) ) * selective_search_radius );
     particle.v[2] = drand48() * 2 * M_PI - M_PI;
     return particle;
   } else {
