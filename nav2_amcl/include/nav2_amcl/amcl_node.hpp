@@ -112,6 +112,8 @@ protected:
   std::unique_ptr<tf2_ros::MessageFilter<sensor_msgs::msg::LaserScan>> laser_scan_filter_;
   message_filters::Connection laser_scan_connection_;
 
+  void updateOdomTransformation();
+
   // Publishers and subscribers
   void initPubSub();
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::ConstSharedPtr

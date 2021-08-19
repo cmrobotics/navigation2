@@ -438,6 +438,7 @@ std::optional<std::vector<nav2_msgs::msg::Location>> optional_locations;
 double selective_search_radius;
 std::random_device random_dev;
 std::mt19937 random_generator(random_dev());
+tf2::Transform tx_odom_tf2;
 
 bool
 AmclNode::getOdomPose(
@@ -517,9 +518,14 @@ AmclNode::selectivePoseGenerator(void * arg)
   if(optional_locations) {
     std::vector<nav2_msgs::msg::Location> locations = *optional_locations;
     pf_vector_t particle;
-    auto location = *select_randomly(locations.begin(), locations.end(), random_generator);
-    particle.v[0] = location.x + ( ( 2.0 * (drand48() - 0.5) ) * selective_search_radius );
-    particle.v[1] = location.y + ( ( 2.0 * (drand48() - 0.5) ) * selective_search_radius );
+    auto location = *select_randomly(locations.begin(), locations.end(), random_generator);    geometry_msgs::msg::Pose current_pose;
+    current_pose.position.x = location.x + ( ( 2.0 * (drand48() - 0.5) ) * selective_search_radius );
+    current_pose.position.y = location.y + ( ( 2.0 * (drand48() - 0.5) ) * selective_search_radius );
+    tf2::Transform current_transform;
+    tf2::impl::Converter<true, false>::convert(current_pose, current_transform);
+    tf2::Transform new_transformation = current_transform * tx_odom_tf2;
+    particle.v[0] = new_transformation.getOrigin().x();
+    particle.v[1] = new_transformation.getOrigin().y();
     particle.v[2] = drand48() * 2 * M_PI - M_PI;
     return particle;
   } else {
@@ -565,6 +571,7 @@ AmclNode::selectiveLocalizationCallback(
 {
   optional_locations = { request->locations };
   selective_search_radius = selective_search_radius_;
+  updateOdomTransformation();
   RCLCPP_INFO(get_logger(), "Initializing with povided locations and uniform distribution orientation");
   pf_init_model(
     pf_, (pf_init_model_fn_t)AmclNode::selectivePoseGenerator,
@@ -681,6 +688,32 @@ AmclNode::handleInitialPose(geometry_msgs::msg::PoseWithCovarianceStamped & msg)
   pf_init_ = false;
   init_pose_received_on_inactive = false;
   initial_pose_is_known_ = true;
+}
+
+
+void AmclNode::updateOdomTransformation()
+{
+  // In case the client sent us a pose estimate in the past, integrate the
+  // intervening odometric change.
+  geometry_msgs::msg::TransformStamped tx_odom;
+  try {
+    rclcpp::Time rclcpp_time = now();
+    tf2::TimePoint tf2_time(std::chrono::nanoseconds(rclcpp_time.nanoseconds()));
+    // Check if the transform is available
+    tx_odom = tf_buffer_->lookupTransform(
+      base_frame_id_, odom_frame_id_, tf2_time);
+  } catch (tf2::TransformException & e) {
+    // If we've never sent a transform, then this is normal, because the
+    // global_frame_id_ frame doesn't exist.  We only care about in-time
+    // transformation for on-the-move pose-setting, so ignoring this
+    // startup condition doesn't really cost us anything.
+    if (sent_first_transform_) {
+      RCLCPP_WARN(get_logger(), "Failed to transform initial pose in time (%s)", e.what());
+    }
+    tf2::impl::Converter<false, true>::convert(tf2::Transform::getIdentity(), tx_odom.transform);
+  }
+
+  tf2::impl::Converter<true, false>::convert(tx_odom.transform, tx_odom_tf2);
 }
 
 void
