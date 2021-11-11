@@ -278,6 +278,7 @@ BtNavigator::navigateToPose()
     std::shared_ptr<Action::Feedback> feedback_msg = std::make_shared<Action::Feedback>();
 
     auto on_loop = [&]() {
+      try {
         if (action_server_->is_preempt_requested()) {
           RCLCPP_INFO(get_logger(), "Received goal preemption request");
           action_server_->accept_pending_goal();
@@ -301,7 +302,11 @@ BtNavigator::navigateToPose()
         feedback_msg->number_of_recoveries = recovery_count;
         feedback_msg->navigation_time = now() - start_time_;
         action_server_->publish_feedback(feedback_msg);
-      };
+      } catch (...) {
+        RCLCPP_ERROR(get_logger(), "Failed to terminate action after undefined exception was caught. BT sent failed status");
+        action_server_->terminate_all();
+      }
+    };
 
     // Execute the BT that was previously created in the configure step
     nav2_behavior_tree::BtStatus rc = bt_->run(&tree_, on_loop, is_canceling);
