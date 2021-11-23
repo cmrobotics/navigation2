@@ -19,6 +19,7 @@ jobs:
             cd ..
             pwd
             source /opt/ros/foxy/setup.bash
+            rosdep install -y -r -q --from-paths src --ignore-src --rosdistro foxy
             colcon build 
 
       - persist_to_workspace:
