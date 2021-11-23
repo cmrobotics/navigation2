@@ -18,8 +18,8 @@ jobs:
           command: |
             cd ..
             pwd
-            apt-get install python-rosdep
             source /opt/ros/foxy/setup.bash
+            apt-get install python-rosdep
             rosdep install -y -r -q --from-paths src --ignore-src --rosdistro foxy
             colcon build 
 
