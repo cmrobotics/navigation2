@@ -278,7 +278,6 @@ protected:
   double lookahead_time_;
   bool use_velocity_scaled_lookahead_dist_;
   tf2::Duration transform_tolerance_;
-  bool use_approach_vel_scaling_;
   double min_approach_linear_velocity_;
   double approach_velocity_scaling_dist_;
   double control_duration_;

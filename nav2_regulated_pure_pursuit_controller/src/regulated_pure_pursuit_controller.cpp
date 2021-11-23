@@ -77,8 +77,6 @@ void RegulatedPurePursuitController::configure(
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".min_approach_linear_velocity", rclcpp::ParameterValue(0.05));
   declare_parameter_if_not_declared(
-    node, plugin_name_ + ".use_approach_linear_velocity_scaling", rclcpp::ParameterValue(true));
-  declare_parameter_if_not_declared(
     node, plugin_name_ + ".approach_velocity_scaling_dist",
     rclcpp::ParameterValue(0.6));
   declare_parameter_if_not_declared(
@@ -130,9 +128,6 @@ void RegulatedPurePursuitController::configure(
   node->get_parameter(
     plugin_name_ + ".min_approach_linear_velocity",
     min_approach_linear_velocity_);
-  node->get_parameter(
-    plugin_name_ + ".use_approach_linear_velocity_scaling",
-    use_approach_vel_scaling_);
   node->get_parameter(
     plugin_name_ + ".approach_velocity_scaling_dist",
     approach_velocity_scaling_dist_);
@@ -475,7 +470,21 @@ bool RegulatedPurePursuitController::isCollisionImminent(
   pose_msg.header.frame_id = arc_pts_msg.header.frame_id;
   pose_msg.header.stamp = arc_pts_msg.header.stamp;
 
-  const double projection_time = costmap_->getResolution() / fabs(linear_vel);
+  double projection_time = 0.0;
+  if (fabs(linear_vel) < 0.01 && fabs(angular_vel) > 0.01) {
+    // rotating to heading at goal or toward path
+    // Equation finds the angular distance required for the largest
+    // part of the robot radius to move to another costmap cell:
+    // theta_min = 2.0 * sin ((res/2) / r_max)
+    // via isosceles triangle r_max-r_max-resolution,
+    // dividing by angular_velocity gives us a timestep.
+    double max_radius = costmap_ros_->getLayeredCostmap()->getCircumscribedRadius();
+    projection_time =
+      2.0 * sin((costmap_->getResolution() / 2) / max_radius) / fabs(angular_vel);
+  } else {
+    // Normal path tracking
+    projection_time = costmap_->getResolution() / fabs(linear_vel);
+  }
 
   const geometry_msgs::msg::Point & robot_xy = robot_pose.pose.position;
   geometry_msgs::msg::Pose2D curr_pose;
