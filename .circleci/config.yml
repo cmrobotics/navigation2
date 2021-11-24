@@ -5,14 +5,14 @@ executors:
   simple-docker:
     docker:
       - image: gallaisoma/ros2-foxy:latest
-    working_directory: ~/workspace/cmr_msgs
+    working_directory: ~/workspace/src/navigation2
 
 jobs:
   build:
     executor: simple-docker
     steps:
       - checkout:
-          path: ~/workspace/cmr_msgs
+          path: ~/workspace/src/navigation2
       - run: 
           name: Run build
           command: |
