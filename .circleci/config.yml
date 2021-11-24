@@ -16,7 +16,7 @@ jobs:
       - run: 
           name: Run build
           command: |
-            cd ..
+            cd ../..
             pwd
             ls
             source /opt/ros/foxy/setup.bash
