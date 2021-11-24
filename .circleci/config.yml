@@ -19,7 +19,7 @@ jobs:
             cd ..
             pwd
             source /opt/ros/foxy/setup.bash
-            rosdep
+            pip install -U rosdep
             rosdep install -y -r -q --from-paths src --ignore-src --rosdistro foxy
             colcon build 
 
