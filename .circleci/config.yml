@@ -6,7 +6,6 @@ executors:
     docker:
       - image: gallaisoma/ros2-foxy:latest
     working_directory: ~/workspace/src/navigation2
-
 jobs:
   build:
     executor: simple-docker
@@ -17,15 +16,12 @@ jobs:
           name: Run build
           command: |
             cd ../..
-            pwd
-            ls
             source /opt/ros/foxy/setup.bash
             apt-get update
             rosdep init 
             rosdep update
             rosdep install -y -r -q --from-paths src --ignore-src --rosdistro foxy
             colcon build 
-
       - persist_to_workspace:
           root: ../ 
           paths: 
@@ -39,8 +35,6 @@ jobs:
           name: Deploy the deb artifact
           command: |
             cd ../..
-            pwd
-            ls
             source ~/workspace/install/setup.bash
             pip install -U bloom
             apt update
@@ -52,11 +46,8 @@ jobs:
             fakeroot debian/rules binary
             cd ..
             mv ros-foxy-navigation2_* ros-foxy-navigation2.deb
-
       - store_artifacts:
           path: ~/workspace/ros-foxy-navigation2.deb
-
-
 workflows:
   build and test:
     jobs:
