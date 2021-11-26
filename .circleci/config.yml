@@ -20,6 +20,7 @@ jobs:
             pwd
             ls
             source /opt/ros/foxy/setup.bash
+            apt-get update
             pip install -U rosdep
             rosdep init 
             rosdep update
