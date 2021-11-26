@@ -21,7 +21,6 @@ jobs:
             ls
             source /opt/ros/foxy/setup.bash
             apt-get update
-            pip install -U rosdep
             rosdep init 
             rosdep update
             rosdep install -y -r -q --from-paths src --ignore-src --rosdistro foxy
@@ -39,7 +38,9 @@ jobs:
       - run:
           name: Deploy the deb artifact
           command: |
+            cd ../..
             pwd
+            ls
             source ~/workspace/install/setup.bash
             pip install -U bloom
             apt update
