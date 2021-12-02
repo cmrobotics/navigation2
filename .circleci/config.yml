@@ -23,9 +23,12 @@ jobs:
             rosdep install -y -r -q --from-paths src --ignore-src --rosdistro foxy
             colcon build 
       - persist_to_workspace:
-          root: ../ 
+          root: ~/workspace
           paths: 
-            - .
+            - src
+            - build
+            - log
+            - install
   deploy:
     executor: simple-docker
     steps: 
