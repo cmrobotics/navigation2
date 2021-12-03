@@ -21,7 +21,7 @@ jobs:
             rosdep init 
             rosdep update
             rosdep install -y -r -q --from-paths src --ignore-src --rosdistro foxy
-            colcon build --executor-sequential
+            MAKEFLAGS="-j1 -l1" colcon build --symlink-install --executor sequential
       - persist_to_workspace:
           root: ~/workspace
           paths: 
