@@ -108,8 +108,8 @@ BehaviorTreeEngine::resetGrootMonitor()
 void
 BehaviorTreeEngine::haltAllActions(BT::TreeNode * root_node)
 {
-  // if (!root_node)
-  //   return;
+  if (!root_node)
+    return;
 
   // this halt signal should propagate through the entire tree.
   root_node->halt();
