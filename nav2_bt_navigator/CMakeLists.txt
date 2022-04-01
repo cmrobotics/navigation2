@@ -18,7 +18,6 @@ find_package(std_srvs REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(nav2_core REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(backward_ros REQUIRED)
 
 nav2_package()
 
