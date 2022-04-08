@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(nav2_amcl)
 
-find_package(backward_ros REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(nav2_common REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -16,6 +15,10 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(nav2_msgs REQUIRED)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  find_package(backward_ros REQUIRED)
+endif ()
 
 nav2_package()
 

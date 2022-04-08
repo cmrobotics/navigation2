@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(nav2_behavior_tree CXX)
 
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
-
 find_package(ament_cmake REQUIRED)
 find_package(nav2_common REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -19,7 +17,10 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(nav2_util REQUIRED)
-find_package(backward_ros REQUIRED)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  find_package(backward_ros REQUIRED)
+endif ()
 
 nav2_package()
 
