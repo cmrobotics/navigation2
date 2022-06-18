@@ -178,6 +178,7 @@ void ParticleCloudDisplay::processMessage(const nav2_msgs::msg::ParticleCloud::C
     poses_[i].position = rviz_common::pointMsgToOgre(msg->particles[i].pose.position);
     poses_[i].orientation = rviz_common::quaternionMsgToOgre(msg->particles[i].pose.orientation);
     poses_[i].weight = static_cast<float>(msg->particles[i].weight);
+    poses_[i].position.z = poses_[i].weight * height_scale_;
   }
 
   updateDisplay();
