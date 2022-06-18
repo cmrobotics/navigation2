@@ -178,7 +178,6 @@ void ParticleCloudDisplay::processMessage(const nav2_msgs::msg::ParticleCloud::C
     poses_[i].position = rviz_common::pointMsgToOgre(msg->particles[i].pose.position);
     poses_[i].orientation = rviz_common::quaternionMsgToOgre(msg->particles[i].pose.orientation);
     poses_[i].weight = static_cast<float>(msg->particles[i].weight);
-    poses_[i].position.z = poses_[i].weight * height_scale_;
   }
 
   updateDisplay();
@@ -267,7 +266,10 @@ void ParticleCloudDisplay::updateArrows3d()
       shaft_length * head_length_scale_,
       shaft_length * head_radius_scale_
     );
-    arrows3d_[i]->setPosition(poses_[i].position);
+
+    auto position = poses_[i].position;
+    position.z = poses_[i].weight * height_scale_;
+    arrows3d_[i]->setPosition(position);
     arrows3d_[i]->setOrientation(poses_[i].orientation * adjust_orientation);
   }
 }
