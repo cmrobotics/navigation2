@@ -124,8 +124,6 @@ private:
   void updateArrows2d();
   void updateArrows3d();
   void updateAxes();
-  void updateArrow3dGeometry();
-  void updateAxesGeometry();
 
   std::unique_ptr<rviz_rendering::Axes> makeAxes();
   std::unique_ptr<rviz_rendering::Arrow> makeArrow3d();

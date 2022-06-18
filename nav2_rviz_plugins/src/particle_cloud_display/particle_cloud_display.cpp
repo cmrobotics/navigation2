@@ -367,55 +367,8 @@ void ParticleCloudDisplay::updateGeometry()
   arrow_min_length_property_->setMax(max_length_);
   arrow_max_length_property_->setMin(min_length_);
 
-  int shape = shape_property_->getOptionInt();
-  switch (shape) {
-    case ShapeType::Arrow2d:
-      updateArrows2d();
-      arrows3d_.clear();
-      axes_.clear();
-      break;
-    case ShapeType::Arrow3d:
-      updateArrow3dGeometry();
-      arrows2d_->clear();
-      axes_.clear();
-      break;
-    case ShapeType::Axes:
-      updateAxesGeometry();
-      arrows2d_->clear();
-      arrows3d_.clear();
-      break;
-  }
-
+  updateDisplay();
   context_->queueRender();
-}
-
-void ParticleCloudDisplay::updateArrow3dGeometry()
-{
-  float shaft_length;
-  for (std::size_t i = 0; i < poses_.size() && i < arrows3d_.size(); ++i) {
-    shaft_length = std::min(
-      std::max(
-        poses_[i].weight * length_scale_ + min_length_,
-        min_length_), max_length_);
-    arrows3d_[i]->set(
-      shaft_length,
-      shaft_length * shaft_radius_scale_,
-      shaft_length * head_length_scale_,
-      shaft_length * head_radius_scale_
-    );
-  }
-}
-
-void ParticleCloudDisplay::updateAxesGeometry()
-{
-  float shaft_length;
-  for (std::size_t i = 0; i < poses_.size() && i < axes_.size(); ++i) {
-    shaft_length = std::min(
-      std::max(
-        poses_[i].weight * length_scale_ + min_length_,
-        min_length_), max_length_);
-    axes_[i]->set(shaft_length, shaft_length * shaft_radius_scale_);
-  }
 }
 
 void ParticleCloudDisplay::setShape(QString shape)
