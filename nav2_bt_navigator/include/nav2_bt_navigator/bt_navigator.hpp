@@ -26,6 +26,7 @@
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/create_timer_ros.h"
 #include "nav2_bt_navigator/navigators/navigate_to_pose.hpp"
+#include "nav2_bt_navigator/navigators/navigate_to_named_pose.hpp"
 #include "nav2_bt_navigator/navigators/navigate_through_poses.hpp"
 #include "nav2_bt_navigator/navigators/navigate_fleet_nodes.hpp"
 
@@ -86,6 +87,7 @@ protected:
 
   // To handle all the BT related execution
   std::unique_ptr<nav2_bt_navigator::Navigator<nav2_msgs::action::NavigateToPose>> pose_navigator_;
+  std::unique_ptr<nav2_bt_navigator::Navigator<cmr_msgs::action::NavigateToNamedPose>> named_pose_navigator_;
   std::unique_ptr<nav2_bt_navigator::Navigator<nav2_msgs::action::NavigateThroughPoses>>
   poses_navigator_;
   std::unique_ptr<nav2_bt_navigator::Navigator<cmr_msgs::action::NavigateFleetNodes>>
