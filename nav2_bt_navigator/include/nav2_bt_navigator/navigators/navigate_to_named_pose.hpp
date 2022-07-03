@@ -21,7 +21,6 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav2_bt_navigator/navigator.hpp"
-#include "nav2_msgs/action/navigate_to_pose.hpp"
 #include "nav2_util/geometry_utils.hpp"
 #include "nav2_util/robot_utils.hpp"
 #include "cmr_msgs/action/navigate_to_named_pose.hpp"
@@ -73,7 +72,7 @@ public:
    * @brief Get action name for this navigator
    * @return string Name of action server
    */
-  std::string getName() {return std::string("navigate_to_pose");}
+  std::string getName() {return std::string("navigate_to_named_pose");}
 
   /**
    * @brief Get navigator's default BT
@@ -114,7 +113,7 @@ protected:
    * @brief Goal pose initialization on the blackboard
    * @param goal Action template's goal message to process
    */
-  void initializeGoalPose(ActionT::Goal::ConstSharedPtr goal);
+  void initializeGoalPose(geometry_msgs::msg::PoseStamped & pose);
 
   rclcpp::Time start_time_;
 

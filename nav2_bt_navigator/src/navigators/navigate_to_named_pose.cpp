@@ -95,7 +95,20 @@ NavigateToNamedPoseNavigator::goalReceived(ActionT::Goal::ConstSharedPtr goal)
     return false;
   }
 
-  initializeGoalPose(goal);
+  RCLCPP_INFO(
+    logger_, "Looking for pose for location (%s)",
+    goal->location.c_str());
+
+  // fill in pose
+  geometry_msgs::msg::PoseStamped goal_pose;
+  if (!nav2_util::getCurrentPose(
+      goal_pose, *feedback_utils_.tf,
+      feedback_utils_.global_frame, goal->location,
+      feedback_utils_.transform_tolerance)) {
+    return false;
+  }
+
+  initializeGoalPose(goal_pose);
 
   return true;
 }
@@ -186,7 +199,19 @@ NavigateToNamedPoseNavigator::onPreempt(ActionT::Goal::ConstSharedPtr goal)
     // if pending goal requests the same BT as the current goal, accept the pending goal
     // if pending goal has an empty behavior_tree field, it requests the default BT file
     // accept the pending goal if the current goal is running the default BT file
-    initializeGoalPose(bt_action_server_->acceptPendingGoal());
+
+    // fill in pose
+    auto goal = bt_action_server_->acceptPendingGoal();
+    geometry_msgs::msg::PoseStamped goal_pose;
+    if (!nav2_util::getCurrentPose(
+        goal_pose, *feedback_utils_.tf,
+        feedback_utils_.global_frame, goal->location,
+        feedback_utils_.transform_tolerance)) {
+      RCLCPP_WARN( logger_, "failed to lookup goallocation (%s)", goal->location.c_str());
+      bt_action_server_->terminatePendingGoal();
+    } else {
+      initializeGoalPose(goal_pose);
+    }
   } else {
     RCLCPP_WARN(
       logger_,
@@ -200,14 +225,13 @@ NavigateToNamedPoseNavigator::onPreempt(ActionT::Goal::ConstSharedPtr goal)
 }
 
 void
-NavigateToNamedPoseNavigator::initializeGoalPose(ActionT::Goal::ConstSharedPtr goal)
+NavigateToNamedPoseNavigator::initializeGoalPose(geometry_msgs::msg::PoseStamped & pose)
 {
   RCLCPP_INFO(
-    logger_, "Begin navigating from current location to (%s)",
-    goal->location.c_str());
+    logger_, "Begin navigating from current location to (%.2f, %.2f)",
+    pose.pose.position.x, pose.pose.position.y);
+  RCLCPP_INFO(logger_, "using BT file: %s.", bt_action_server_->getCurrentBTFilename().c_str());
 
-  // TODO fill in pose
-  geometry_msgs::msg::PoseStamped pose;
   // Reset state for new action feedback
   start_time_ = clock_->now();
   auto blackboard = bt_action_server_->getBlackboard();

@@ -96,6 +96,9 @@ BtNavigator::on_configure(const rclcpp_lifecycle::State & /*state*/)
   transform_tolerance_ = get_parameter("transform_tolerance").as_double();
   odom_topic_ = get_parameter("odom_topic").as_string();
 
+  std::cout << "ROBOT FRAME: " << robot_frame_ << "\n";
+  std::cout << "GLOBAL FRAME: " << global_frame_ << "\n";
+
   // Libraries to pull plugins (BT Nodes) from
   auto plugin_lib_names = get_parameter("plugin_lib_names").as_string_array();
 
