@@ -31,6 +31,9 @@ ComputePathToPoseAction::ComputePathToPoseAction(
 void ComputePathToPoseAction::on_tick()
 {
   getInput("goal", goal_.goal);
+  auto l = goal_.goal.pose.position;
+  std::cout << "Goal : " << l.x << " " << l.y << "\n";
+  RCLCPP_ERROR(rclcpp::get_logger("ComputePathToPoseAction"), "Goal %.2f %.2f", l.x, l.y);
   getInput("planner_id", goal_.planner_id);
   if (getInput("start", goal_.start)) {
     goal_.use_start = true;
@@ -40,6 +43,8 @@ void ComputePathToPoseAction::on_tick()
 BT::NodeStatus ComputePathToPoseAction::on_success()
 {
   setOutput("path", result_.result->path);
+  std::cout << "Goal resolved to path!\n";
+  RCLCPP_ERROR(rclcpp::get_logger("ComputePathToPoseAction"), "resolved path!");
   return BT::NodeStatus::SUCCESS;
 }
 
