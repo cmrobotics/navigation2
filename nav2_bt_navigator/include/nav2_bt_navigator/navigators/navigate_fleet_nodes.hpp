@@ -111,7 +111,9 @@ protected:
    * action result message or indicate that this action is done.
    * @param result Action template result message to populate
    */
-  void goalCompleted(typename ActionT::Result::SharedPtr result) override;
+  void goalCompleted(
+    typename ActionT::Result::SharedPtr result,
+    const nav2_behavior_tree::BtStatus final_bt_status) override;
 
   /**
    * @brief Goal pose initialization on the blackboard

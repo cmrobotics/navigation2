@@ -75,7 +75,9 @@ NavigateFleetNodesNavigator::goalReceived(ActionT::Goal::ConstSharedPtr goal)
 }
 
 void
-NavigateFleetNodesNavigator::goalCompleted(typename ActionT::Result::SharedPtr /*result*/)
+NavigateFleetNodesNavigator::goalCompleted(
+  typename ActionT::Result::SharedPtr /*result*/,
+  const nav2_behavior_tree::BtStatus /*final_bt_status*/)
 {
 }
 
