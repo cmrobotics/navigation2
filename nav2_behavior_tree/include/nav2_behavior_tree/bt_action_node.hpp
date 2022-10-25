@@ -95,7 +95,7 @@ public:
     RCLCPP_DEBUG(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
     if (!action_client_->wait_for_action_server(3s)) {
       RCLCPP_ERROR(
-        node_->get_logger(), "\"%s\" action server not available after waiting for 1 s",
+        node_->get_logger(), "\"%s\" action server not available after waiting for 3 s",
         action_name.c_str());
       throw std::runtime_error(std::string("Action server %s not available", action_name.c_str()));
     }
