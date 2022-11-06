@@ -85,6 +85,7 @@ add_library(layers SHARED
   plugins/inflation_layer.cpp
   plugins/static_layer.cpp
   plugins/obstacle_layer.cpp
+  plugins/static_obstacle_layer.cpp
   src/observation_buffer.cpp
   plugins/voxel_layer.cpp
   plugins/range_sensor_layer.cpp
