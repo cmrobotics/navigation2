@@ -149,6 +149,7 @@ protected:
   std::vector<geometry_msgs::msg::Point> transformed_footprint_;
   std::vector<geometry_msgs::msg::PoseStamped> all_robot_poses_;
   std::vector<nav_msgs::msg::Path> all_robot_paths_;
+  std::mutex all_robot_poses_lock_, all_robot_paths_lock_;
   std::string other_robots_footprint_string_;
 
   bool footprint_clearing_enabled_;

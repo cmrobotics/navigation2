@@ -137,6 +137,7 @@ void RobotObstacleLayer::onInitialize()
 
 void RobotObstacleLayer::robots_poses_callback_(const nav_msgs::msg::Path::SharedPtr robot_poses)
 {
+  std::scoped_lock lock(all_robot_poses_lock_);
   all_robot_poses_ = robot_poses->poses;
 }
 
@@ -166,89 +167,93 @@ RobotObstacleLayer::updateBounds(
       logger_,
       "Size (%.2f, %.2f) . ",getSizeInMetersX(), getSizeInMetersY());
 
-  // Add robots 
-  for(geometry_msgs::msg::PoseStamped & robot_pose: all_robot_poses_)
-  {
-    std::vector<geometry_msgs::msg::Point> robot_footprint, transformed_footprint;
-
-
-    // All this just to get yaw
-    tf2::Quaternion tf2_quat;
-    tf2::fromMsg(robot_pose.pose.orientation, tf2_quat);
-    double r, p, yaw;
-    tf2::Matrix3x3 m(tf2_quat);
-    m.getRPY(r, p, yaw);
-
-    if(makeFootprintFromString( other_robots_footprint_string_, robot_footprint))
+  { // Mark other robots footprints
+    std::scoped_lock lock(all_robot_poses_lock_);
+    // Add robots 
+    for(geometry_msgs::msg::PoseStamped & robot_pose: all_robot_poses_)
     {
-      transformFootprint(robot_pose.pose.position.x, robot_pose.pose.position.y, yaw, 
-                          robot_footprint, transformed_footprint);
-      setConvexPolygonCost(transformed_footprint, other_robots_footprint_marking_value_);
+      std::vector<geometry_msgs::msg::Point> robot_footprint, transformed_footprint;
+
+      // All this just to get yaw
+      tf2::Quaternion tf2_quat;
+      tf2::fromMsg(robot_pose.pose.orientation, tf2_quat);
+      double r, p, yaw;
+      tf2::Matrix3x3 m(tf2_quat);
+      m.getRPY(r, p, yaw);
+
+      if(makeFootprintFromString( other_robots_footprint_string_, robot_footprint))
+      {
+        transformFootprint(robot_pose.pose.position.x, robot_pose.pose.position.y, yaw, 
+                            robot_footprint, transformed_footprint);
+        setConvexPolygonCost(transformed_footprint, other_robots_footprint_marking_value_);
+      }     
     }
-      
   }
 
-  for(nav_msgs::msg::Path & robot_path: all_robot_paths_)
-  {
-    if(robot_path.poses.size() < 2)
-      continue;
-
-    unsigned char path_cost = other_robots_path_marking_value_;
-    
-    for(unsigned int pose_index = 1; pose_index < robot_path.poses.size(); pose_index++)
+  { // Mark other robot paths 
+    std::scoped_lock lock(all_robot_paths_lock_);
+    for(nav_msgs::msg::Path & robot_path: all_robot_paths_)
     {
-      geometry_msgs::msg::PoseStamped waypoint_1 = robot_path.poses.at(pose_index-1);
-      geometry_msgs::msg::PoseStamped waypoint_2 = robot_path.poses.at(pose_index);
+      if(robot_path.poses.size() < 2)
+        continue;
 
-      std::vector<geometry_msgs::msg::Point> rectangle_along_path;
-
-      geometry_msgs::msg::Point vertex;
+      unsigned char path_cost = other_robots_path_marking_value_;
       
-      geometry_msgs::msg::Point straight_line_vector;
+      for(unsigned int pose_index = 1; pose_index < robot_path.poses.size(); pose_index++)
+      {
+        geometry_msgs::msg::PoseStamped waypoint_1 = robot_path.poses.at(pose_index-1);
+        geometry_msgs::msg::PoseStamped waypoint_2 = robot_path.poses.at(pose_index);
 
-      //tf2::Vector3 straight_line_vector;
+        std::vector<geometry_msgs::msg::Point> rectangle_along_path;
 
-      straight_line_vector.x = waypoint_2.pose.position.x - waypoint_1.pose.position.x;
-      straight_line_vector.y = waypoint_2.pose.position.y - waypoint_1.pose.position.y;
-      straight_line_vector.z = 0;
-      double norm = hypot(straight_line_vector.x, straight_line_vector.y);
-      straight_line_vector.x /= norm;
-      straight_line_vector.y /= norm;
+        geometry_msgs::msg::Point vertex;
+        
+        geometry_msgs::msg::Point straight_line_vector;
 
-      geometry_msgs::msg::Point unit_perp_vector; // rotate vector by 90deg
-      unit_perp_vector.x = straight_line_vector.y;
-      unit_perp_vector.y = -straight_line_vector.x;
+        //tf2::Vector3 straight_line_vector;
 
-      // Get 4 vertices to get a rectangle
-      // Translate straight line path along _|_ normal in two directions
+        straight_line_vector.x = waypoint_2.pose.position.x - waypoint_1.pose.position.x;
+        straight_line_vector.y = waypoint_2.pose.position.y - waypoint_1.pose.position.y;
+        straight_line_vector.z = 0;
+        double norm = hypot(straight_line_vector.x, straight_line_vector.y);
+        straight_line_vector.x /= norm;
+        straight_line_vector.y /= norm;
 
-      vertex.x = waypoint_1.pose.position.x + unit_perp_vector.x * marking_width_/2.0;
-      vertex.y = waypoint_1.pose.position.y + unit_perp_vector.y * marking_width_/2.0;
+        geometry_msgs::msg::Point unit_perp_vector; // rotate vector by 90deg
+        unit_perp_vector.x = straight_line_vector.y;
+        unit_perp_vector.y = -straight_line_vector.x;
 
-      rectangle_along_path.push_back(vertex);
+        // Get 4 vertices to get a rectangle
+        // Translate straight line path along _|_ normal in two directions
 
-      vertex.x = waypoint_2.pose.position.x + unit_perp_vector.x * marking_width_/2.0;
-      vertex.y = waypoint_2.pose.position.y + unit_perp_vector.y * marking_width_/2.0;
+        vertex.x = waypoint_1.pose.position.x + unit_perp_vector.x * marking_width_/2.0;
+        vertex.y = waypoint_1.pose.position.y + unit_perp_vector.y * marking_width_/2.0;
 
-      rectangle_along_path.push_back(vertex);
+        rectangle_along_path.push_back(vertex);
 
-      vertex.x = waypoint_2.pose.position.x - unit_perp_vector.x * marking_width_/2.0;
-      vertex.y = waypoint_2.pose.position.y - unit_perp_vector.y * marking_width_/2.0;
+        vertex.x = waypoint_2.pose.position.x + unit_perp_vector.x * marking_width_/2.0;
+        vertex.y = waypoint_2.pose.position.y + unit_perp_vector.y * marking_width_/2.0;
 
-      rectangle_along_path.push_back(vertex);
+        rectangle_along_path.push_back(vertex);
 
-      vertex.x = waypoint_1.pose.position.x - unit_perp_vector.x * marking_width_/2.0;
-      vertex.y = waypoint_1.pose.position.y - unit_perp_vector.y * marking_width_/2.0;
+        vertex.x = waypoint_2.pose.position.x - unit_perp_vector.x * marking_width_/2.0;
+        vertex.y = waypoint_2.pose.position.y - unit_perp_vector.y * marking_width_/2.0;
 
-      rectangle_along_path.push_back(vertex);
+        rectangle_along_path.push_back(vertex);
 
-      setConvexPolygonCost(rectangle_along_path, path_cost);
+        vertex.x = waypoint_1.pose.position.x - unit_perp_vector.x * marking_width_/2.0;
+        vertex.y = waypoint_1.pose.position.y - unit_perp_vector.y * marking_width_/2.0;
 
-      if (path_cost < cost_decrement_step_per_waypoint_)
-        path_cost = 0; // =Free space
-      else
-        path_cost -= cost_decrement_step_per_waypoint_;
+        rectangle_along_path.push_back(vertex);
 
+        setConvexPolygonCost(rectangle_along_path, path_cost);
+
+        if (path_cost < cost_decrement_step_per_waypoint_)
+          path_cost = 0; // =Free space
+        else
+          path_cost -= cost_decrement_step_per_waypoint_;
+
+      }
     }
   }
 
