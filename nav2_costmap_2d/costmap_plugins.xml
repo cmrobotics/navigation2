@@ -15,6 +15,9 @@
     <class type="nav2_costmap_2d::RangeSensorLayer" base_class_type="nav2_costmap_2d::Layer">
       <description>A range-sensor (sonar, IR) based obstacle layer for costmap_2d</description>
     </class>
+    <class type="nav2_costmap_2d::RobotObstacleLayer" base_class_type="nav2_costmap_2d::Layer">
+      <description>Adds location and paths of other robots to the costmap to mark those areas as occupied</description>
+    </class>
   </library>
 
   <library path="filters">
