@@ -51,6 +51,7 @@ PLUGINLIB_EXPORT_CLASS(nav2_costmap_2d::RobotObstacleLayer, nav2_costmap_2d::Lay
 
 using nav2_costmap_2d::NO_INFORMATION;
 using nav2_costmap_2d::LETHAL_OBSTACLE;
+using nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
 using nav2_costmap_2d::FREE_SPACE;
 
 using nav2_costmap_2d::ObservationBuffer;
@@ -71,13 +72,17 @@ void RobotObstacleLayer::onInitialize()
   bool track_unknown_space;
   double transform_tolerance;
   std::string robot_poses_topic, robot_paths_topic;
-  // TODO(mjeronimo): these four are candidates for dynamic update
+  std::string other_robots_footprint_marking_value, other_robots_path_marking_value;
+  
   declareParameter("enabled", rclcpp::ParameterValue(true));
   declareParameter("footprint_clearing_enabled", rclcpp::ParameterValue(true));
   declareParameter("marking_width", rclcpp::ParameterValue(1.0));
   declareParameter("combination_method", rclcpp::ParameterValue(1));
-  declareParameter("robot_poses_topic", rclcpp::ParameterValue(std::string("other_robots_poses")));
-  declareParameter("robot_paths_topic", rclcpp::ParameterValue(std::string("other_robots_paths")));
+  declareParameter("robot_poses_topic", rclcpp::ParameterValue(std::string("/other_robots_poses")));
+  declareParameter("other_robots_footprint_marking_value", rclcpp::ParameterValue(std::string("LETHAL_OBSTACLE")));
+  declareParameter("robot_paths_topic", rclcpp::ParameterValue(std::string("/other_robots_paths")));
+  declareParameter("other_robots_path_marking_value", rclcpp::ParameterValue(std::string("INSCRIBED_INFLATED_OBSTACLE")));
+  declareParameter("cost_decrement_step_per_waypoint", rclcpp::ParameterValue(1));
   declareParameter("other_robots_footprint", rclcpp::ParameterValue(std::string("[ [0.48, 0.36], [-0.48, 0.36], [-0.48, -0.36], [0.48, -0.36] ]")));
 
   auto node = node_.lock();
@@ -90,7 +95,10 @@ void RobotObstacleLayer::onInitialize()
   node->get_parameter(name_ + "." + "marking_width", marking_width_);
   node->get_parameter(name_ + "." + "combination_method", combination_method_);
   node->get_parameter(name_ + "." + "robot_poses_topic", robot_poses_topic);
+  node->get_parameter(name_ + "." + "other_robots_footprint_marking_value", other_robots_footprint_marking_value);
   node->get_parameter(name_ + "." + "robot_paths_topic", robot_paths_topic);
+  node->get_parameter(name_ + "." + "other_robots_path_marking_value", other_robots_path_marking_value);
+  node->get_parameter(name_ + "." + "cost_decrement_step_per_waypoint", cost_decrement_step_per_waypoint_);
   node->get_parameter(name_ + "." + "other_robots_footprint", other_robots_footprint_string_);
   node->get_parameter("track_unknown_space", track_unknown_space);
   node->get_parameter("transform_tolerance", transform_tolerance);
@@ -102,6 +110,20 @@ void RobotObstacleLayer::onInitialize()
   } else {
     default_value_ = FREE_SPACE;
   }
+
+  if(other_robots_footprint_marking_value == "LETHAL_OBSTACLE")
+    other_robots_footprint_marking_value_ = nav2_costmap_2d::LETHAL_OBSTACLE;
+  else if(other_robots_footprint_marking_value == "INSCRIBED_INFLATED_OBSTACLE")
+    other_robots_footprint_marking_value_ = nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
+  else
+    other_robots_footprint_marking_value_ = atoi( other_robots_footprint_marking_value.c_str() ); // assume its a number
+
+  if(other_robots_path_marking_value == "LETHAL_OBSTACLE")
+    other_robots_path_marking_value_ = nav2_costmap_2d::LETHAL_OBSTACLE;
+  else if(other_robots_path_marking_value == "INSCRIBED_INFLATED_OBSTACLE")
+    other_robots_path_marking_value_ = nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
+  else
+    other_robots_path_marking_value_ = atoi( other_robots_footprint_marking_value.c_str() );
 
   RobotObstacleLayer::matchSize();
   current_ = true;
@@ -161,7 +183,7 @@ RobotObstacleLayer::updateBounds(
     {
       transformFootprint(robot_pose.pose.position.x, robot_pose.pose.position.y, yaw, 
                           robot_footprint, transformed_footprint);
-      setConvexPolygonCost(transformed_footprint, nav2_costmap_2d::LETHAL_OBSTACLE);
+      setConvexPolygonCost(transformed_footprint, other_robots_footprint_marking_value_);
     }
       
   }
@@ -170,6 +192,8 @@ RobotObstacleLayer::updateBounds(
   {
     if(robot_path.poses.size() < 2)
       continue;
+
+    unsigned char path_cost = other_robots_path_marking_value_;
     
     for(unsigned int pose_index = 1; pose_index < robot_path.poses.size(); pose_index++)
     {
@@ -218,7 +242,8 @@ RobotObstacleLayer::updateBounds(
 
       rectangle_along_path.push_back(vertex);
 
-      setConvexPolygonCost(rectangle_along_path, nav2_costmap_2d::LETHAL_OBSTACLE);
+      setConvexPolygonCost(rectangle_along_path, path_cost);
+      path_cost -= cost_decrement_step_per_waypoint_;
 
     }
   }

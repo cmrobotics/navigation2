@@ -144,6 +144,8 @@ public:
   void robots_poses_callback_(const nav_msgs::msg::Path::SharedPtr robot_poses);
 protected:
 
+  unsigned char other_robots_footprint_marking_value_, other_robots_path_marking_value_;
+  unsigned char cost_decrement_step_per_waypoint_;
   std::vector<geometry_msgs::msg::Point> transformed_footprint_;
   std::vector<geometry_msgs::msg::PoseStamped> all_robot_poses_;
   std::vector<nav_msgs::msg::Path> all_robot_paths_;
