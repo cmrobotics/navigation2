@@ -243,7 +243,11 @@ RobotObstacleLayer::updateBounds(
       rectangle_along_path.push_back(vertex);
 
       setConvexPolygonCost(rectangle_along_path, path_cost);
-      path_cost -= cost_decrement_step_per_waypoint_;
+
+      if (path_cost < cost_decrement_step_per_waypoint_)
+        path_cost = 0; // =Free space
+      else
+        path_cost -= cost_decrement_step_per_waypoint_;
 
     }
   }
