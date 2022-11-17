@@ -231,6 +231,10 @@ AmclNode::AmclNode()
   add_parameter(
     "max_particle_gen_prob_ext_pose", rclcpp::ParameterValue(0.01f),
     "Maximum probability of generating a particle based on external pose source");
+
+  add_parameter(
+    "ext_pose_search_tolerance_sec", rclcpp::ParameterValue(0.1f),
+    "Time tolerance for corresponding external pose measurement search");
 }
 
 AmclNode::~AmclNode()
@@ -250,6 +254,8 @@ AmclNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
   initPubSub();
   initServices();
   initOdometry();
+
+  ext_pose_buffer = std::make_unique<ExternalPoseBuffer>(ext_pose_search_tolerance_sec_);
 
   return nav2_util::CallbackReturn::SUCCESS;
 }
@@ -613,7 +619,7 @@ AmclNode::externalPoseReceived(const geometry_msgs::msg::PoseWithCovarianceStamp
   last_ext_pose_received_ts_ = now();
 
   ExternalPoseMeasument pose;
-  pose.time_ns = rclcpp::Time(msg.header.stamp).seconds();
+  pose.time_sec = rclcpp::Time(msg.header.stamp).seconds();
 
   double yaw = tf2::getYaw(msg.pose.pose.orientation);
 
@@ -649,7 +655,7 @@ AmclNode::externalPoseReceived(const geometry_msgs::msg::PoseWithCovarianceStamp
 
   memcpy(pose.eigen_matrix, temp_mat, 9*sizeof(double));
 
-  ext_pose_buffer.addMeasurement(pose);
+  ext_pose_buffer->addMeasurement(pose);
 }
 
 void
@@ -798,7 +804,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
         pf_->ext_pose_is_valid = 0;
       } else {
         ExternalPoseMeasument tmp;
-        if(ext_pose_buffer.findClosestMeasurement(last_laser_received_ts_.seconds(), tmp)) {
+        if(ext_pose_buffer->findClosestMeasurement(last_laser_received_ts_.seconds(), tmp)) {
           pf_->ext_pose_is_valid = 1;
 
           pf_->ext_x = tmp.x;
@@ -808,6 +814,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
           memcpy(pf_->cov_matrix, tmp.cov_matrix, 9*sizeof(double));
           memcpy(pf_->eigen_matrix, tmp.eigen_matrix, 9*sizeof(double));
         } else {
+          pf_->ext_pose_is_valid = 0;
           RCLCPP_WARN(get_logger(), "No close measurement exists");
         }
       }
@@ -1218,6 +1225,7 @@ AmclNode::initParameters()
   get_parameter("map_topic", map_topic_);
   get_parameter("k_l", k_l_);
   get_parameter("max_particle_gen_prob_ext_pose", max_particle_gen_prob_ext_pose_);
+  get_parameter("ext_pose_search_tolerance_sec", ext_pose_search_tolerance_sec_);
   save_pose_period_ = tf2::durationFromSec(1.0 / save_pose_rate);
   transform_tolerance_ = tf2::durationFromSec(tmp_tol);
 
