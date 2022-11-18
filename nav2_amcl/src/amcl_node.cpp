@@ -786,7 +786,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     updateFilter(laser_index, laser_scan, pose);
 
     // Resample the particles
-    if (!(++resample_count_ % resample_interval_)) {
+    if (false) { // !(++resample_count_ % resample_interval_)
       
       if(!isExtPoseActive()){
         // if external position source is inactive, it considered invalid
