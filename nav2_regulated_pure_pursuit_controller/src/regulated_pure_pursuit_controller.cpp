@@ -77,8 +77,6 @@ void RegulatedPurePursuitController::configure(
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".min_approach_linear_velocity", rclcpp::ParameterValue(0.05));
   declare_parameter_if_not_declared(
-    node, plugin_name_ + ".use_approach_linear_velocity_scaling", rclcpp::ParameterValue(true));
-  declare_parameter_if_not_declared(
     node, plugin_name_ + ".approach_velocity_scaling_dist",
     rclcpp::ParameterValue(0.6));
   declare_parameter_if_not_declared(
@@ -130,9 +128,6 @@ void RegulatedPurePursuitController::configure(
   node->get_parameter(
     plugin_name_ + ".min_approach_linear_velocity",
     min_approach_linear_velocity_);
-  node->get_parameter(
-    plugin_name_ + ".use_approach_linear_velocity_scaling",
-    use_approach_vel_scaling_);
   node->get_parameter(
     plugin_name_ + ".approach_velocity_scaling_dist",
     approach_velocity_scaling_dist_);
@@ -197,6 +192,11 @@ void RegulatedPurePursuitController::configure(
   global_path_pub_ = node->create_publisher<nav_msgs::msg::Path>("received_global_plan", 1);
   carrot_pub_ = node->create_publisher<geometry_msgs::msg::PointStamped>("lookahead_point", 1);
   carrot_arc_pub_ = node->create_publisher<nav_msgs::msg::Path>("lookahead_collision_arc", 1);
+
+  // initialize collision checker and set costmap
+  collision_checker_ = std::make_unique<nav2_costmap_2d::
+      FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *>>(costmap_);
+  collision_checker_->setCostmap(costmap_);
 }
 
 void RegulatedPurePursuitController::cleanup()
@@ -455,7 +455,10 @@ bool RegulatedPurePursuitController::isCollisionImminent(
   // odom frame and the carrot_pose is in robot base frame.
 
   // check current point is OK
-  if (inCollision(robot_pose.pose.position.x, robot_pose.pose.position.y)) {
+  if (inCollision(
+      robot_pose.pose.position.x, robot_pose.pose.position.y,
+      tf2::getYaw(robot_pose.pose.orientation)))
+  {
     return true;
   }
 
@@ -467,7 +470,21 @@ bool RegulatedPurePursuitController::isCollisionImminent(
   pose_msg.header.frame_id = arc_pts_msg.header.frame_id;
   pose_msg.header.stamp = arc_pts_msg.header.stamp;
 
-  const double projection_time = costmap_->getResolution() / fabs(linear_vel);
+  double projection_time = 0.0;
+  if (fabs(linear_vel) < 0.01 && fabs(angular_vel) > 0.01) {
+    // rotating to heading at goal or toward path
+    // Equation finds the angular distance required for the largest
+    // part of the robot radius to move to another costmap cell:
+    // theta_min = 2.0 * sin ((res/2) / r_max)
+    // via isosceles triangle r_max-r_max-resolution,
+    // dividing by angular_velocity gives us a timestep.
+    double max_radius = costmap_ros_->getLayeredCostmap()->getCircumscribedRadius();
+    projection_time =
+      2.0 * sin((costmap_->getResolution() / 2) / max_radius) / fabs(angular_vel);
+  } else {
+    // Normal path tracking
+    projection_time = costmap_->getResolution() / fabs(linear_vel);
+  }
 
   const geometry_msgs::msg::Point & robot_xy = robot_pose.pose.position;
   geometry_msgs::msg::Pose2D curr_pose;
@@ -475,6 +492,7 @@ bool RegulatedPurePursuitController::isCollisionImminent(
   curr_pose.y = robot_pose.pose.position.y;
   curr_pose.theta = tf2::getYaw(robot_pose.pose.orientation);
 
+  // only forward simulate within time requested
   int i = 1;
   while (i * projection_time < max_allowed_time_to_collision_up_to_carrot_) {
     i++;
@@ -495,8 +513,8 @@ bool RegulatedPurePursuitController::isCollisionImminent(
     pose_msg.pose.position.z = 0.01;
     arc_pts_msg.poses.push_back(pose_msg);
 
-    // check for collision at this point
-    if (inCollision(curr_pose.x, curr_pose.y)) {
+    // check for collision at the projected pose
+    if (inCollision(curr_pose.x, curr_pose.y, curr_pose.theta)) {
       carrot_arc_pub_->publish(arc_pts_msg);
       return true;
     }
@@ -507,7 +525,10 @@ bool RegulatedPurePursuitController::isCollisionImminent(
   return false;
 }
 
-bool RegulatedPurePursuitController::inCollision(const double & x, const double & y)
+bool RegulatedPurePursuitController::inCollision(
+  const double & x,
+  const double & y,
+  const double & theta)
 {
   unsigned int mx, my;
 
@@ -520,13 +541,16 @@ bool RegulatedPurePursuitController::inCollision(const double & x, const double 
     return false;
   }
 
-  unsigned char cost = costmap_->getCost(mx, my);
-
-  if (costmap_ros_->getLayeredCostmap()->isTrackingUnknown()) {
-    return cost >= INSCRIBED_INFLATED_OBSTACLE && cost != NO_INFORMATION;
-  } else {
-    return cost >= INSCRIBED_INFLATED_OBSTACLE;
+  double footprint_cost = collision_checker_->footprintCostAtPose(
+    x, y, theta, costmap_ros_->getRobotFootprint());
+  if (footprint_cost == static_cast<double>(NO_INFORMATION) &&
+    costmap_ros_->getLayeredCostmap()->isTrackingUnknown())
+  {
+    return false;
   }
+
+  // if occupied or unknown and not to traverse unknown space
+  return footprint_cost >= static_cast<double>(LETHAL_OBSTACLE);
 }
 
 double RegulatedPurePursuitController::costAtPose(const double & x, const double & y)
