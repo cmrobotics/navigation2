@@ -273,7 +273,7 @@ protected:
    */
   void initExternalPose();
 
-  std::unique_ptr<ExternalPoseBuffer> ext_pose_buffer;
+  std::unique_ptr<ExternalPoseBuffer> ext_pose_buffer_;
 
   rclcpp::Time last_ext_pose_received_ts_;
   std::chrono::seconds ext_pose_check_interval_;
