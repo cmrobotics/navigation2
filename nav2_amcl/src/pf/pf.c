@@ -48,7 +48,9 @@ static int pf_resample_limit(pf_t * pf, int k);
 pf_t * pf_alloc(
   int min_samples, int max_samples,
   double alpha_slow, double alpha_fast,
-  pf_init_model_fn_t random_pose_fn, void * random_pose_data, double k_l)
+  pf_init_model_fn_t random_pose_fn,
+  void * random_pose_data, double k_l,
+  double max_particle_gen_prob_ext_pose)
 {
   int i, j;
   pf_t * pf;
@@ -103,6 +105,8 @@ pf_t * pf_alloc(
   pf->w_slow = 0.0;
   pf->w_fast = 0.0;
   pf->k_l = k_l;
+  pf->max_particle_gen_prob_ext_pose = max_particle_gen_prob_ext_pose;
+  pf->ext_pose_is_valid = 0;
 
   pf->alpha_slow = alpha_slow;
   pf->alpha_fast = alpha_fast;
@@ -154,8 +158,6 @@ void pf_init(pf_t * pf, pf_vector_t mean, pf_matrix_t cov)
   }
 
   pf->w_slow = pf->w_fast = 0.0;
-
-  pf->ext_pose_is_valid = 0;
 
   pf_pdf_gaussian_free(pdf);
 
@@ -345,7 +347,7 @@ double norm_random()
 {
   double u = (double)rand()/RAND_MAX;
   double v = (double)rand()/RAND_MAX;
-  double x = sqrt(-2*log(u))*cos(2*3.14159*v); // Check this
+  double x = sqrt(-2*log(u))*cos(2*M_PI*v); // Check this
 
   return x;
 
@@ -367,6 +369,14 @@ int generate_random_particle(double x, double y, double yaw, double *cov_matrix,
     return 0;
 }
 
+// Unconstrained (input args can be of any value, even more/less than 2*pi) angular distance in range [-pi, pi)
+// Source: https://stackoverflow.com/a/28037434/13167995
+double angular_difference(double angle1, double angle2){
+  double diff = fmod(angle2 - angle1 + M_PI_2, M_PI) - M_PI_2;
+  
+  return diff < -M_PI_2 ? diff + M_PI : diff;
+}
+
 // Resample the distribution
 void pf_update_resample(pf_t * pf)
 {
@@ -386,28 +396,28 @@ void pf_update_resample(pf_t * pf)
   set_b = pf->sets + (pf->current_set + 1) % 2;
 
   double total_dist_prob = 0;
+
+  double covariance_determinant = (pf->cov_matrix[0] * pf->cov_matrix[4] * pf->cov_matrix[8]);
+  double max_particle_likelihood = 1/sqrt(pow(2*M_PI, 3) * covariance_determinant);
+
   if(pf->ext_pose_is_valid){
     double total_weight = 0;
-    for(int i = 0; i < set_a->sample_count; i++)
+    for(i = 0; i < set_a->sample_count; i++)
     {
-      double distance = (pow(set_a->samples[i].pose.v[0]-pf->ext_x, 2)/pf->cov_matrix[0] + pow(set_a->samples[i].pose.v[1]-pf->ext_y, 2)/pf->cov_matrix[4] + pow(set_a->samples[i].pose.v[2]-pf->ext_yaw, 2)/pf->cov_matrix[8]);
-
-      double cov = (pf->cov_matrix[0] * pf->cov_matrix[4] * pf->cov_matrix[8]);
-      total_dist_prob += 1/sqrt(pow(2*M_PI, 3) * cov)*exp(-1*distance/2);
 
       // See Improved LiDAR Probabilistic Localization for Autonomous Vehicles Using GNSS, #3.2 for details
+      double distance = pow(set_a->samples[i].pose.v[0]-pf->ext_x, 2) / pf->cov_matrix[0] + 
+                        pow(set_a->samples[i].pose.v[1]-pf->ext_y, 2) / pf->cov_matrix[4] + 
+                        + pow(angular_difference(set_a->samples[i].pose.v[2], pf->ext_yaw), 2) / pf->cov_matrix[8];
 
-      double mat[3] = {set_a->samples[i].pose.v[0]-pf->ext_x, set_a->samples[i].pose.v[1]-pf->ext_y, set_a->samples[i].pose.v[2]-pf->ext_yaw};
-      double result[3];
-      double inverse[9];
-      get_inverse(pf->cov_matrix, inverse);
-      mult_1_3_x_3_3(mat, inverse, result);
-      double temp = mult_1_3_x_3_1(result, mat);
-      double d = 1/(pow(3.14159 * 2, 1.5) * sqrt(get_determinant(pf->cov_matrix))) * exp(-0.5 * temp);
+      double ext_pose_likelihood = max_particle_likelihood*exp(-1*distance/2);
+
+      total_dist_prob += ext_pose_likelihood;
+
+      // fprintf(stderr, "AMCL: laser weight - %f, ext pose likelihood - %f\n", set_a->samples[i].weight, ext_pose_likelihood);
 
       // See Improved LiDAR Probabilistic Localization for Autonomous Vehicles Using GNSS, #3.3 for details
-      set_a->samples[i].weight = set_a->samples[i].weight * pf->k_l + d;
-
+      set_a->samples[i].weight = set_a->samples[i].weight * pf->k_l + ext_pose_likelihood;
 
       total_weight += set_a->samples[i].weight;
     }
@@ -415,17 +425,17 @@ void pf_update_resample(pf_t * pf)
     /// Handle total weight of 0
     if(total_weight == 0)
     {
-      for(int i=0;i<set_a->sample_count;i++)
-      {
+      for(i=0;i<set_a->sample_count;i++){
         set_a->samples[i].weight = 1;
         total_weight += set_a->samples[i].weight;
       }
-    }
-
-    /// Normalization
-    for(int i=0;i<set_a->sample_count;i++)
+    } else 
     {
-      set_a->samples[i].weight = set_a->samples[i].weight / total_weight;
+      /// Normalization
+      for(i=0;i<set_a->sample_count;i++)
+      {
+        set_a->samples[i].weight = set_a->samples[i].weight / total_weight;
+      }
     }
   }
 
@@ -449,11 +459,10 @@ void pf_update_resample(pf_t * pf)
 
 if(pf->ext_pose_is_valid){
 
-  // fprintf(stderr, "AMCL: w_diff - %f, k_l - %f\n", w_diff, pf->k_l);
-
   // See Improved LiDAR Probabilistic Localization for Autonomous Vehicles Using GNSS, #3.4 for details
   total_dist_prob = total_dist_prob/set_a->sample_count;
-  w_diff = 0.01 - total_dist_prob;
+  w_diff = (pf->max_particle_gen_prob_ext_pose * max_particle_likelihood - total_dist_prob) / max_particle_likelihood;
+
   if(w_diff < 0.0)
     w_diff = 0.0;
   
