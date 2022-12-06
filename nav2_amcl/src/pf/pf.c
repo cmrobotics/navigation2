@@ -49,7 +49,6 @@ pf_t * pf_alloc(
   int min_samples, int max_samples,
   double alpha_slow, double alpha_fast,
   pf_init_model_fn_t random_pose_fn,
-  void * random_pose_data,
   double max_particle_gen_prob_ext_pose)
 {
   int i, j;
@@ -62,7 +61,6 @@ pf_t * pf_alloc(
   pf = calloc(1, sizeof(pf_t));
 
   pf->random_pose_fn = random_pose_fn;
-  pf->random_pose_data = random_pose_data;
 
   pf->min_samples = min_samples;
   pf->max_samples = max_samples;
@@ -377,7 +375,7 @@ double angular_difference(double angle1, double angle2){
 }
 
 // Resample the distribution
-void pf_update_resample(pf_t * pf)
+void pf_update_resample(pf_t * pf, void * random_pose_data)
 {
   int i;
   double total;
@@ -492,7 +490,7 @@ if(pf->ext_pose_is_valid){
       if(pf->ext_pose_is_valid){
         generate_random_particle(pf->ext_x, pf->ext_y, pf->ext_yaw, pf->eigen_matrix, sample_b->pose.v);
       } else {
-        sample_b->pose = (pf->random_pose_fn)(pf->random_pose_data);
+        sample_b->pose = (pf->random_pose_fn)(random_pose_data);
       }
     } else
     {
