@@ -43,6 +43,7 @@
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/create_timer_ros.h"
 
+#include <diagnostic_updater/diagnostic_updater.hpp>
 #include <eigen3/Eigen/Eigenvalues>
 
 #pragma GCC diagnostic push
@@ -60,7 +61,7 @@ namespace nav2_amcl
 using nav2_util::geometry_utils::orientationAroundZAxis;
 
 AmclNode::AmclNode()
-: nav2_util::LifecycleNode("amcl", "", true)
+: nav2_util::LifecycleNode("amcl", "", true), diagnostic_updater_(this)
 {
   RCLCPP_INFO(get_logger(), "Creating");
 
@@ -257,6 +258,7 @@ AmclNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
   initMessageFilters();
   initPubSub();
   initServices();
+  initDiagnostic();
   initOdometry();
 
   return nav2_util::CallbackReturn::SUCCESS;
@@ -293,7 +295,6 @@ AmclNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
   // Lifecycle publishers must be explicitly activated
   pose_pub_->on_activate();
   particle_cloud_pub_->on_activate();
-  amcl_lost_flag_pub_->on_activate();
 
   first_pose_sent_ = false;
 
@@ -332,7 +333,6 @@ AmclNode::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
   // Lifecycle publishers must be explicitly deactivated
   pose_pub_->on_deactivate();
   particle_cloud_pub_->on_deactivate();
-  amcl_lost_flag_pub_->on_deactivate();
 
   // destroy bond connection
   destroyBond();
@@ -370,7 +370,6 @@ AmclNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
   // PubSub
   pose_pub_.reset();
   particle_cloud_pub_.reset();
-  amcl_lost_flag_pub_.reset();
 
   // Odometry
   motion_model_.reset();
@@ -842,7 +841,6 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     int max_weight_hyp = -1;
     if (getMaxWeightHyp(hyps, max_weight_hyps, max_weight_hyp)) {
       publishAmclPose(laser_scan, hyps, max_weight_hyp); // estimated_pose = pose(best_cluster.mean, filter.covariance)
-      publishStandardDeviationFlag();
       calculateMaptoOdomTransform(laser_scan, hyps, max_weight_hyp);
 
       if (tf_broadcast_ == true) {
@@ -865,6 +863,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
       sendMapToOdomTransform(transform_expiration);
     }
   }
+  diagnostic_updater_.force_update();
 }
 
 bool AmclNode::addNewScanner(
@@ -1429,10 +1428,6 @@ AmclNode::initPubSub()
     "amcl_pose",
     rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
 
-  amcl_lost_flag_pub_ = create_publisher<std_msgs::msg::Bool>(
-    "amcl_lost_flag",
-    rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
-
   initial_pose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "initialpose", rclcpp::SystemDefaultsQoS(),
     std::bind(&AmclNode::initialPoseReceived, this, std::placeholders::_1));
@@ -1462,6 +1457,13 @@ AmclNode::initServices()
   get_initial_pose_status_srv_ = this->create_service<cmr_msgs::srv::GetStatus>(
     "get_initial_pose_status",
     std::bind(&AmclNode::getInitialPoseStatusCallback, this, _1, _2));
+}
+
+void
+AmclNode::initDiagnostic()
+{
+  diagnostic_updater_.setHardwareID("none");
+  diagnostic_updater_.add("Standard deviation", this, &AmclNode::standardDeviationDiagnostics);
 }
 
 void
@@ -1540,23 +1542,25 @@ AmclNode::initExternalPose()
 // 'true' if exceeds any of threshold
 // Based on https://github.com/ros-planning/navigation/pull/807
 void
-AmclNode::publishStandardDeviationFlag()
+AmclNode::standardDeviationDiagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat)
 {
+  using DiagStatus = diagnostic_msgs::msg::DiagnosticStatus;
+
   double std_x = sqrt(last_published_pose_.pose.covariance[6*0+0]);
   double std_y = sqrt(last_published_pose_.pose.covariance[6*1+1]);
   double std_yaw = sqrt(last_published_pose_.pose.covariance[6*5+5]);
 
-  std_msgs::msg::Bool msg;
-  if (std_x > std_warn_level_x_ || std_y > std_warn_level_y_ || std_yaw > std_warn_level_yaw_)
-  {
-    RCLCPP_WARN(get_logger(), "Deviation too large");
-    msg.data = true;
-    amcl_lost_flag_pub_->publish(msg);
-  }
-  else
-  {
-    msg.data = false;
-    amcl_lost_flag_pub_->publish(msg);
+  stat.add("std_x", std_x);
+  stat.add("std_y", std_y);
+  stat.add("std_yaw", std_yaw);
+  stat.add("std_warn_level_x", std_warn_level_x_);
+  stat.add("std_warn_level_y", std_warn_level_y_);
+  stat.add("std_warn_level_yaw", std_warn_level_yaw_);
+
+  if (std_x > std_warn_level_x_ || std_y > std_warn_level_y_ || std_yaw > std_warn_level_yaw_) {
+    stat.summary(DiagStatus::WARN, "Deviation too large");
+  } else {
+    stat.summary(DiagStatus::OK, "OK");
   }
 }
 
