@@ -229,17 +229,25 @@ AmclNode::AmclNode()
     "k_l", rclcpp::ParameterValue(200.0f),
     "Constant to balance the importance of the external pose data");
 
-    add_parameter(
-      "std_warn_level_x", rclcpp::ParameterValue(0.2),
-      "Limit threshold of x value. Monitors the estimated standard deviation of the filter.");
+  add_parameter(
+    "std_warn_level_x", rclcpp::ParameterValue(0.2),
+    "Limit threshold of x value. Monitors the estimated standard deviation of the filter.");
 
-    add_parameter(
-      "std_warn_level_y", rclcpp::ParameterValue(0.2),
-      "Limit threshold of y value. Monitors the estimated standard deviation of the filter.");
+  add_parameter(
+    "std_warn_level_y", rclcpp::ParameterValue(0.2),
+    "Limit threshold of y value. Monitors the estimated standard deviation of the filter.");
 
-    add_parameter(
-      "std_warn_level_yaw", rclcpp::ParameterValue(0.1),
-      "Limit threshold of yaw value. Monitors the estimated standard deviation of the filter.");
+  add_parameter(
+    "std_warn_level_yaw", rclcpp::ParameterValue(0.1),
+    "Limit threshold of yaw value. Monitors the estimated standard deviation of the filter.");
+    
+  add_parameter(
+    "max_particle_gen_prob_ext_pose", rclcpp::ParameterValue(0.01f),
+    "Maximum probability of generating a particle based on external pose source");
+
+  add_parameter(
+    "ext_pose_search_tolerance_sec", rclcpp::ParameterValue(0.1f),
+    "Time tolerance for corresponding external pose measurement search");
 }
 
 AmclNode::~AmclNode()
@@ -260,6 +268,8 @@ AmclNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
   initServices();
   initDiagnostic();
   initOdometry();
+
+  ext_pose_buffer_ = std::make_unique<ExternalPoseBuffer>(ext_pose_search_tolerance_sec_);
 
   return nav2_util::CallbackReturn::SUCCESS;
 }
@@ -623,6 +633,7 @@ AmclNode::externalPoseReceived(const geometry_msgs::msg::PoseWithCovarianceStamp
   last_ext_pose_received_ts_ = now();
 
   ExternalPoseMeasument pose;
+  pose.time_sec = rclcpp::Time(msg.header.stamp).seconds();
 
   double yaw = tf2::getYaw(msg.pose.pose.orientation);
 
@@ -658,7 +669,7 @@ AmclNode::externalPoseReceived(const geometry_msgs::msg::PoseWithCovarianceStamp
 
   memcpy(pose.eigen_matrix, temp_mat, 9*sizeof(double));
 
-  ext_pose_buffer.addMeasurement(pose);
+  ext_pose_buffer_->addMeasurement(pose);
 }
 
 void
@@ -807,7 +818,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
         pf_->ext_pose_is_valid = 0;
       } else {
         ExternalPoseMeasument tmp;
-        if(ext_pose_buffer.findClosestMeasurement(last_laser_received_ts_.nanoseconds(), tmp)) {
+        if(ext_pose_buffer_->findClosestMeasurement(rclcpp::Time(laser_scan->header.stamp).seconds(), tmp)) {
           pf_->ext_pose_is_valid = 1;
 
           pf_->ext_x = tmp.x;
@@ -817,6 +828,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
           memcpy(pf_->cov_matrix, tmp.cov_matrix, 9*sizeof(double));
           memcpy(pf_->eigen_matrix, tmp.eigen_matrix, 9*sizeof(double));
         } else {
+          pf_->ext_pose_is_valid = 0;
           RCLCPP_WARN(get_logger(), "No close measurement exists");
         }
       }
@@ -829,7 +841,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     }
 
     pf_sample_set_t * set = pf_->sets + pf_->current_set;
-    RCLCPP_DEBUG(get_logger(), "Num samples: %d\n", set->sample_count);
+    RCLCPP_DEBUG(get_logger(), "Num samples: %d", set->sample_count);
 
     if (!force_update_) {
       publishParticleCloud(set);
@@ -1237,6 +1249,9 @@ AmclNode::initParameters()
   get_parameter("std_warn_level_x", std_warn_level_x_);
   get_parameter("std_warn_level_y", std_warn_level_y_);
   get_parameter("std_warn_level_yaw", std_warn_level_yaw_);
+  get_parameter("max_particle_gen_prob_ext_pose", max_particle_gen_prob_ext_pose_);
+  get_parameter("ext_pose_search_tolerance_sec", ext_pose_search_tolerance_sec_);
+  
   save_pose_period_ = tf2::durationFromSec(1.0 / save_pose_rate);
   transform_tolerance_ = tf2::durationFromSec(tmp_tol);
 
@@ -1501,7 +1516,7 @@ AmclNode::initParticleFilter()
   pf_ = pf_alloc(
     min_particles_, max_particles_, alpha_slow_, alpha_fast_,
     (pf_init_model_fn_t)AmclNode::uniformPoseGenerator,
-    reinterpret_cast<void *>(map_), k_l_);
+    reinterpret_cast<void *>(map_), k_l_, max_particle_gen_prob_ext_pose_);
   pf_->pop_err = pf_err_;
   pf_->pop_z = pf_z_;
 

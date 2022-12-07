@@ -291,7 +291,7 @@ protected:
   double std_warn_level_y_;
   double std_warn_level_yaw_;
 
-  ExternalPoseBuffer ext_pose_buffer;
+  std::unique_ptr<ExternalPoseBuffer> ext_pose_buffer_;
 
   rclcpp::Time last_ext_pose_received_ts_;
   std::chrono::seconds ext_pose_check_interval_;
@@ -421,7 +421,8 @@ protected:
   double z_short_;
   double z_rand_;
   double k_l_;
-  bool fuse_external_pose_;
+  double max_particle_gen_prob_ext_pose_;
+  double ext_pose_search_tolerance_sec_;
   std::string scan_topic_{"scan"};
   std::string map_topic_{"map"};
 };

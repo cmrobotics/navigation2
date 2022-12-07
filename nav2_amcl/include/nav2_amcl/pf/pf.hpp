@@ -135,9 +135,9 @@ typedef struct _pf_t
   int converged; 
 
   double ext_x, ext_y, ext_yaw;
-  double cov_matrix[9];
-  double eigen_matrix[9];
-  double k_l; // constant, according to paper it is used as an data source importance factor and authors found, 200 is a good value for it
+  double cov_matrix[9], eigen_matrix[9];
+  double k_l; // constant, it is used as an data source importance factor
+  double max_particle_gen_prob_ext_pose;
   int ext_pose_is_valid;
 } pf_t;
 
@@ -146,7 +146,9 @@ typedef struct _pf_t
 pf_t * pf_alloc(
   int min_samples, int max_samples,
   double alpha_slow, double alpha_fast,
-  pf_init_model_fn_t random_pose_fn, void * random_pose_data, double k_l);
+  pf_init_model_fn_t random_pose_fn,
+  void * random_pose_data, double k_l,
+  double max_particle_gen_prob_ext_pose);
 
 // Free an existing filter
 void pf_free(pf_t * pf);
