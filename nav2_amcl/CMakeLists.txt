@@ -6,6 +6,7 @@ find_package(nav2_common REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(message_filters REQUIRED)
+find_package(diagnostic_updater REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
@@ -52,6 +53,7 @@ set(dependencies
   rclcpp
   rclcpp_lifecycle
   message_filters
+  diagnostic_updater
   tf2_geometry_msgs
   geometry_msgs
   nav_msgs

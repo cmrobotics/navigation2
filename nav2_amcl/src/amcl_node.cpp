@@ -43,6 +43,7 @@
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/create_timer_ros.h"
 
+#include <diagnostic_updater/diagnostic_updater.hpp>
 #include <eigen3/Eigen/Eigenvalues>
 
 #pragma GCC diagnostic push
@@ -60,7 +61,7 @@ namespace nav2_amcl
 using nav2_util::geometry_utils::orientationAroundZAxis;
 
 AmclNode::AmclNode()
-: nav2_util::LifecycleNode("amcl", "", true)
+: nav2_util::LifecycleNode("amcl", "", true), diagnostic_updater_(this)
 {
   RCLCPP_INFO(get_logger(), "Creating");
 
@@ -229,6 +230,18 @@ AmclNode::AmclNode()
     "Constant to balance the importance of the external pose data");
 
   add_parameter(
+    "std_warn_level_x", rclcpp::ParameterValue(0.2),
+    "Limit threshold of x value. Monitors the estimated standard deviation of the filter.");
+
+  add_parameter(
+    "std_warn_level_y", rclcpp::ParameterValue(0.2),
+    "Limit threshold of y value. Monitors the estimated standard deviation of the filter.");
+
+  add_parameter(
+    "std_warn_level_yaw", rclcpp::ParameterValue(0.1),
+    "Limit threshold of yaw value. Monitors the estimated standard deviation of the filter.");
+    
+  add_parameter(
     "max_particle_gen_prob_ext_pose", rclcpp::ParameterValue(0.01f),
     "Maximum probability of generating a particle based on external pose source");
 
@@ -253,6 +266,7 @@ AmclNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
   initMessageFilters();
   initPubSub();
   initServices();
+  initDiagnostic();
   initOdometry();
 
   ext_pose_buffer_ = std::make_unique<ExternalPoseBuffer>(ext_pose_search_tolerance_sec_);
@@ -838,7 +852,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     std::vector<amcl_hyp_t> hyps;
     int max_weight_hyp = -1;
     if (getMaxWeightHyp(hyps, max_weight_hyps, max_weight_hyp)) {
-      publishAmclPose(laser_scan, hyps, max_weight_hyp);
+      publishAmclPose(laser_scan, hyps, max_weight_hyp); // estimated_pose = pose(best_cluster.mean, filter.covariance)
       calculateMaptoOdomTransform(laser_scan, hyps, max_weight_hyp);
 
       if (tf_broadcast_ == true) {
@@ -861,6 +875,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
       sendMapToOdomTransform(transform_expiration);
     }
   }
+  diagnostic_updater_.force_update();
 }
 
 bool AmclNode::addNewScanner(
@@ -1028,8 +1043,15 @@ AmclNode::getMaxWeightHyp(
     hyps[hyp_count].weight = weight;
     hyps[hyp_count].pf_pose_mean = pose_mean;
     hyps[hyp_count].pf_pose_cov = pose_cov;
+    RCLCPP_DEBUG(
+      get_logger(), "Hypotheses No %i:\t weight: %.3f",
+      hyp_count+1, hyps[hyp_count].weight);
 
     if (hyps[hyp_count].weight > max_weight) {
+      RCLCPP_DEBUG(get_logger(), "Max weight:\t %f", max_weight);
+      RCLCPP_DEBUG(get_logger(), "Hyp weight:\t %f", hyps[hyp_count].weight);
+      RCLCPP_DEBUG(get_logger(), "CHANGED MAX WEIGHT OR NO HAVING WEIGHT YET");
+
       max_weight = hyps[hyp_count].weight;
       max_weight_hyp = hyp_count;
     }
@@ -1090,7 +1112,7 @@ AmclNode::publishAmclPose(
   temp += p->pose.pose.position.x + p->pose.pose.position.y;
   if (!std::isnan(temp)) {
     RCLCPP_DEBUG(get_logger(), "Publishing pose");
-    last_published_pose_ = *p;
+    last_published_pose_ = *p; // Update last_published_pose_
     first_pose_sent_ = true;
     pose_pub_->publish(std::move(p));
   } else {
@@ -1224,8 +1246,12 @@ AmclNode::initParameters()
   get_parameter("scan_topic", scan_topic_);
   get_parameter("map_topic", map_topic_);
   get_parameter("k_l", k_l_);
+  get_parameter("std_warn_level_x", std_warn_level_x_);
+  get_parameter("std_warn_level_y", std_warn_level_y_);
+  get_parameter("std_warn_level_yaw", std_warn_level_yaw_);
   get_parameter("max_particle_gen_prob_ext_pose", max_particle_gen_prob_ext_pose_);
   get_parameter("ext_pose_search_tolerance_sec", ext_pose_search_tolerance_sec_);
+  
   save_pose_period_ = tf2::durationFromSec(1.0 / save_pose_rate);
   transform_tolerance_ = tf2::durationFromSec(tmp_tol);
 
@@ -1449,6 +1475,13 @@ AmclNode::initServices()
 }
 
 void
+AmclNode::initDiagnostic()
+{
+  diagnostic_updater_.setHardwareID("none");
+  diagnostic_updater_.add("Standard deviation", this, &AmclNode::standardDeviationDiagnostics);
+}
+
+void
 AmclNode::initOdometry()
 {
   // TODO(mjeronimo): We should handle persistance of the last known pose of the robot. We could
@@ -1518,6 +1551,32 @@ AmclNode::initExternalPose()
   last_laser_received_ts_ = rclcpp::Time(0);
   ext_pose_check_interval_ = std::chrono::seconds{1};
   ext_pose_active_ = false;
+}
+
+// Publish estimated standard deviation flag of the filter, coming from pose covariance
+// 'true' if exceeds any of threshold
+// Based on https://github.com/ros-planning/navigation/pull/807
+void
+AmclNode::standardDeviationDiagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat)
+{
+  using DiagStatus = diagnostic_msgs::msg::DiagnosticStatus;
+
+  double std_x = sqrt(last_published_pose_.pose.covariance[6*0+0]);
+  double std_y = sqrt(last_published_pose_.pose.covariance[6*1+1]);
+  double std_yaw = sqrt(last_published_pose_.pose.covariance[6*5+5]);
+
+  stat.add("std_x", std_x);
+  stat.add("std_y", std_y);
+  stat.add("std_yaw", std_yaw);
+  stat.add("std_warn_level_x", std_warn_level_x_);
+  stat.add("std_warn_level_y", std_warn_level_y_);
+  stat.add("std_warn_level_yaw", std_warn_level_yaw_);
+
+  if (std_x > std_warn_level_x_ || std_y > std_warn_level_y_ || std_yaw > std_warn_level_yaw_) {
+    stat.summary(DiagStatus::WARN, "Deviation too large");
+  } else {
+    stat.summary(DiagStatus::OK, "OK");
+  }
 }
 
 }  // namespace nav2_amcl

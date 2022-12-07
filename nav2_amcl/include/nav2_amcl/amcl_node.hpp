@@ -44,6 +44,7 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 
+#include <diagnostic_updater/diagnostic_updater.hpp>
 #include "cmr_msgs/srv/get_status.hpp"
 
 #pragma GCC diagnostic push
@@ -239,6 +240,13 @@ protected:
   geometry_msgs::msg::PoseWithCovarianceStamped last_published_pose_;
   double init_pose_[3];  // Initial robot pose
   double init_cov_[3];
+
+  // Diagnostic
+  /*
+   * @brief Initialize Diagnostic
+   */
+  void initDiagnostic();
+
   /*
    * @brief Get robot pose in odom frame using TF
    */
@@ -272,6 +280,16 @@ protected:
    * @brief Initialize external pose data source
    */
   void initExternalPose();
+  /*
+   * @brief Diagnostic checking robot's covariance
+   * @ true if deviation gets large
+   *
+   */
+  diagnostic_updater::Updater diagnostic_updater_;
+  void standardDeviationDiagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat);
+  double std_warn_level_x_;
+  double std_warn_level_y_;
+  double std_warn_level_yaw_;
 
   std::unique_ptr<ExternalPoseBuffer> ext_pose_buffer_;
 
