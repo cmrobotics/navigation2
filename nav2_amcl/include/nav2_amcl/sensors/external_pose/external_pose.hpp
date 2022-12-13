@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include "nav2_amcl/pf/pf.hpp"
+
 namespace nav2_amcl
 {
 
@@ -49,7 +51,15 @@ std::vector<ExternalPoseMeasument> buffer_ = {};
 
 }; 
 
+/**
+* @brief Update particle weigths based on external pose data
+* @param pf particle filter
+* @param query_sec see `findClosestMeasurement`
+* @return True, if update was succefull, False otherwise
+*/
+void externalPoseSensorUpdate(pf_t * pf, std::shared_ptr<ExternalPoseBuffer> buffer, double query_sec);
 
+double externalPoseSensorFunction(ExternalPoseMeasument * data, pf_sample_set_t * set);
 
 }
 

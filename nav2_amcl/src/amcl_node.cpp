@@ -269,7 +269,7 @@ AmclNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
   initDiagnostic();
   initOdometry();
 
-  ext_pose_buffer_ = std::make_unique<ExternalPoseBuffer>(ext_pose_search_tolerance_sec_);
+  ext_pose_buffer_ = std::make_shared<ExternalPoseBuffer>(ext_pose_search_tolerance_sec_);
 
   return nav2_util::CallbackReturn::SUCCESS;
 }
@@ -813,25 +813,25 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     // Resample the particles
     if (!(++resample_count_ % resample_interval_)) {
       
-      if(!isExtPoseActive()){
-        // if external position source is inactive, it considered invalid
-        pf_->ext_pose_is_valid = 0;
-      } else {
-        ExternalPoseMeasument tmp;
-        if(ext_pose_buffer_->findClosestMeasurement(rclcpp::Time(laser_scan->header.stamp).seconds(), tmp)) {
-          pf_->ext_pose_is_valid = 1;
+      // if(!isExtPoseActive()){
+      //   // if external position source is inactive, it considered invalid
+      //   pf_->ext_pose_is_valid = 0;
+      // } else {
+      //   ExternalPoseMeasument tmp;
+      //   if(ext_pose_buffer_->findClosestMeasurement(rclcpp::Time(laser_scan->header.stamp).seconds(), tmp)) {
+      //     pf_->ext_pose_is_valid = 1;
 
-          pf_->ext_x = tmp.x;
-          pf_->ext_y = tmp.y;
-          pf_->ext_yaw = tmp.yaw;
+      //     pf_->ext_x = tmp.x;
+      //     pf_->ext_y = tmp.y;
+      //     pf_->ext_yaw = tmp.yaw;
 
-          memcpy(pf_->cov_matrix, tmp.cov_matrix, 9*sizeof(double));
-          memcpy(pf_->eigen_matrix, tmp.eigen_matrix, 9*sizeof(double));
-        } else {
-          pf_->ext_pose_is_valid = 0;
-          RCLCPP_WARN(get_logger(), "No close measurement exists");
-        }
-      }
+      //     memcpy(pf_->cov_matrix, tmp.cov_matrix, 9*sizeof(double));
+      //     memcpy(pf_->eigen_matrix, tmp.eigen_matrix, 9*sizeof(double));
+      //   } else {
+      //     pf_->ext_pose_is_valid = 0;
+      //     RCLCPP_WARN(get_logger(), "No close measurement exists");
+      //   }
+      // }
 
       // TODO:
       // overload checkElapsedTime to be able to take start time as arguement
@@ -993,7 +993,14 @@ bool AmclNode::updateFilter(
     ldata.ranges[i][1] = angle_min +
       (i * angle_increment);
   }
+
+  // update filter based on Laser measurement
   lasers_[laser_index]->sensorUpdate(pf_, reinterpret_cast<nav2_amcl::LaserData *>(&ldata));
+  
+  // update filter based on external pose measurement
+  if(isExtPoseActive())
+    externalPoseSensorUpdate(pf_, ext_pose_buffer_, rclcpp::Time(laser_scan->header.stamp).seconds());
+  
   lasers_update_[laser_index] = false;
   pf_odom_pose_ = pose;
   return true;
@@ -1059,10 +1066,11 @@ AmclNode::getMaxWeightHyp(
 
   if (max_weight > 0.0) {
     RCLCPP_DEBUG(
-      get_logger(), "Max weight pose: %.3f %.3f %.3f",
+      get_logger(), "Max weight pose: %.3f %.3f %.3f; max weight: %.3f",
       hyps[max_weight_hyp].pf_pose_mean.v[0],
       hyps[max_weight_hyp].pf_pose_mean.v[1],
-      hyps[max_weight_hyp].pf_pose_mean.v[2]);
+      hyps[max_weight_hyp].pf_pose_mean.v[2],
+      max_weight);
 
     max_weight_hyps = hyps[max_weight_hyp];
     return true;

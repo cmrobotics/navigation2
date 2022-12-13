@@ -65,6 +65,9 @@ typedef struct
 
   // Weight for this pose
   double weight;
+
+  // DEBUG: flag to mark the particles and then compare differently marked particles
+  int flag;
 } pf_sample_t;
 
 
@@ -104,6 +107,9 @@ typedef struct _pf_sample_set_t
   pf_vector_t mean;
   pf_matrix_t cov;
   int converged;
+
+  // External pose statistics
+  double total_dist_prob_normalized;
 } pf_sample_set_t;
 
 
@@ -138,6 +144,7 @@ typedef struct _pf_t
   double cov_matrix[9], eigen_matrix[9];
   double k_l; // constant, it is used as an data source importance factor
   double max_particle_gen_prob_ext_pose;
+  double total_dist_prob_normalized;
   int ext_pose_is_valid;
 } pf_t;
 
