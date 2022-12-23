@@ -15,4 +15,9 @@
       <description>Lets robot wait for input at waypoint arrival</description>
     </class>
   </library>
+  <library path="localization_eval_at_waypoint">
+    <class type="nav2_waypoint_follower::LocalizationEvalAtWaypoint" base_class_type="nav2_core::WaypointTaskExecutor">
+      <description>Triggers evaluation pipeline at waypoint arrival</description>
+    </class>
+  </library>
 </class_libraries>
