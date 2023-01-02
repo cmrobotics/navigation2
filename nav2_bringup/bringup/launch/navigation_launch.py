@@ -36,6 +36,7 @@ def generate_launch_description():
                        'planner_server',
                        'recoveries_server',
                        'bt_navigator',
+                       'velocity_smoother',
                        'waypoint_follower']
 
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
@@ -114,6 +115,14 @@ def generate_launch_description():
             package='nav2_waypoint_follower',
             executable='waypoint_follower',
             name='waypoint_follower',
+            output='screen',
+            parameters=[configured_params],
+            remappings=remappings),
+
+        Node(
+            package='nav2_velocity_smoother',
+            executable='velocity_smoother',
+            name='velocity_smoother',
             output='screen',
             parameters=[configured_params],
             remappings=remappings),
