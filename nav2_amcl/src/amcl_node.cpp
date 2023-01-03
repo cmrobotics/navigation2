@@ -230,8 +230,8 @@ AmclNode::AmclNode()
     "Topic to subscribe to in order to receive the map to localize on");
 
   add_parameter(
-    "k_l", rclcpp::ParameterValue(200.0f),
-    "Constant to balance the importance of the external pose data");
+    "laser_importance_factor", rclcpp::ParameterValue(1.0f),
+    "Importance factor for laser scan, [0.0, 1.0]");
 
   add_parameter(
     "std_warn_level_x", rclcpp::ParameterValue(0.2),
@@ -1183,19 +1183,19 @@ AmclNode::createLaserObject()
   if (sensor_model_type_ == "beam") {
     return new nav2_amcl::BeamModel(
       z_hit_, z_short_, z_max_, z_rand_, sigma_hit_, lambda_short_,
-      0.0, max_beams_, map_);
+      0.0, max_beams_, map_, laser_importance_factor_);
   }
 
   if (sensor_model_type_ == "likelihood_field_prob") {
     return new nav2_amcl::LikelihoodFieldModelProb(
       z_hit_, z_rand_, sigma_hit_,
       laser_likelihood_max_dist_, do_beamskip_, beam_skip_distance_, beam_skip_threshold_,
-      beam_skip_error_threshold_, max_beams_, map_);
+      beam_skip_error_threshold_, max_beams_, map_, laser_importance_factor_);
   }
 
   return new nav2_amcl::LikelihoodFieldModel(
     z_hit_, z_rand_, sigma_hit_,
-    laser_likelihood_max_dist_, max_beams_, map_);
+    laser_likelihood_max_dist_, max_beams_, map_, laser_importance_factor_);
 }
 
 void
@@ -1251,7 +1251,7 @@ AmclNode::initParameters()
   get_parameter("always_reset_initial_pose", always_reset_initial_pose_);
   get_parameter("scan_topic", scan_topic_);
   get_parameter("map_topic", map_topic_);
-  get_parameter("k_l", k_l_);
+  get_parameter("laser_importance_factor", laser_importance_factor_);
   get_parameter("std_warn_level_x", std_warn_level_x_);
   get_parameter("std_warn_level_y", std_warn_level_y_);
   get_parameter("std_warn_level_yaw", std_warn_level_yaw_);
@@ -1523,7 +1523,7 @@ AmclNode::initParticleFilter()
   pf_ = pf_alloc(
     min_particles_, max_particles_, alpha_slow_, alpha_fast_,
     (pf_init_model_fn_t)AmclNode::uniformPoseGenerator,
-    reinterpret_cast<void *>(map_), k_l_, max_particle_gen_prob_ext_pose_);
+    reinterpret_cast<void *>(map_), max_particle_gen_prob_ext_pose_);
   pf_->pop_err = pf_err_;
   pf_->pop_z = pf_z_;
 
