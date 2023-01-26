@@ -21,6 +21,7 @@ find_package(nav2_util REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(nav2_core REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(std_srvs REQUIRED)
 
 nav2_package()
 
@@ -46,6 +47,7 @@ set(dependencies
   rclcpp
   rclcpp_action
   rclcpp_lifecycle
+  std_srvs
   nav_msgs
   nav2_msgs
   nav2_util
@@ -82,7 +84,12 @@ ament_target_dependencies(input_at_waypoint ${dependencies})
 #prevent pluginlib from using boost
 target_compile_definitions(input_at_waypoint PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
-install(TARGETS ${library_name} wait_at_waypoint photo_at_waypoint input_at_waypoint
+add_library(localization_eval_at_waypoint SHARED plugins/localization_eval_at_waypoint.cpp)
+ament_target_dependencies(localization_eval_at_waypoint ${dependencies})
+#prevent pluginlib from using boost
+target_compile_definitions(localization_eval_at_waypoint PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+
+install(TARGETS ${library_name} wait_at_waypoint photo_at_waypoint input_at_waypoint localization_eval_at_waypoint
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -104,7 +111,7 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-ament_export_libraries(wait_at_waypoint photo_at_waypoint input_at_waypoint ${library_name})
+ament_export_libraries(wait_at_waypoint photo_at_waypoint input_at_waypoint localization_eval_at_waypoint ${library_name})
 ament_export_dependencies(${dependencies})
 pluginlib_export_plugin_description_file(nav2_waypoint_follower plugins.xml)
 
