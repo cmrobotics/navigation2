@@ -406,8 +406,7 @@ void pf_update_resample(pf_t * pf)
 
       // See Improved LiDAR Probabilistic Localization for Autonomous Vehicles Using GNSS, #3.2 for details
       double distance = pow(set_a->samples[i].pose.v[0]-pf->ext_x, 2) / pf->cov_matrix[0] + 
-                        pow(set_a->samples[i].pose.v[1]-pf->ext_y, 2) / pf->cov_matrix[4] + 
-                        + pow(angular_difference(set_a->samples[i].pose.v[2], pf->ext_yaw), 2) / pf->cov_matrix[8];
+                        pow(set_a->samples[i].pose.v[1]-pf->ext_y, 2) / pf->cov_matrix[4];
 
       double ext_pose_likelihood = max_particle_likelihood*exp(-1*distance/2);
 
@@ -461,6 +460,10 @@ if(pf->ext_pose_is_valid){
   // See Improved LiDAR Probabilistic Localization for Autonomous Vehicles Using GNSS, #3.4 for details
   total_dist_prob = total_dist_prob/set_a->sample_count;
   w_diff = (pf->max_particle_gen_prob_ext_pose * max_particle_likelihood - total_dist_prob) / max_particle_likelihood;
+
+  fprintf(stderr, "AMCL: w_diff - %f\n", w_diff);
+
+  w_diff = 0.0;
 
   if(w_diff < 0.0)
     w_diff = 0.0;
