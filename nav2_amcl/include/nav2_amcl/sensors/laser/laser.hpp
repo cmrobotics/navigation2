@@ -19,6 +19,7 @@
 #define NAV2_AMCL__SENSORS__LASER__LASER_HPP_
 
 #include <string>
+#include <vector>
 #include "nav2_amcl/pf/pf.hpp"
 #include "nav2_amcl/pf/pf_pdf.hpp"
 #include "nav2_amcl/map/map.hpp"
@@ -41,7 +42,7 @@ public:
    * @param max_beams number of beams to use
    * @param map Map pointer to use
    */
-  Laser(size_t max_beams, map_t * map);
+  Laser(size_t max_beams, bool enable_grid_based_beam_sampling, double grid_based_beam_sampling_cell_size, size_t max_beam_hits_per_cell, map_t * map);
 
   /*
    * @brief Laser destructor
@@ -61,6 +62,11 @@ public:
    * @param laser_pose Pose of the laser
    */
   void SetLaserPose(pf_vector_t & laser_pose);
+
+  bool enable_grid_based_beam_sampling_;
+  double grid_based_beam_sampling_cell_size_;
+  size_t max_beam_hits_per_cell_;
+  std::vector<int> sampled_beam_indexes_for_particle_w_max_weight_;
 
 protected:
   double z_hit_;
@@ -123,7 +129,9 @@ public:
    */
   BeamModel(
     double z_hit, double z_short, double z_max, double z_rand, double sigma_hit,
-    double lambda_short, double chi_outlier, size_t max_beams, map_t * map, double laser_importance_factor);
+    double lambda_short, double chi_outlier, size_t max_beams, 
+    bool enable_grid_based_beam_sampling, double grid_based_beam_sampling_cell_size, size_t max_beam_hits_per_cell, 
+    map_t * map, double laser_importance_factor);
 
   /*
    * @brief Run a sensor update on laser
@@ -153,7 +161,9 @@ public:
    */
   LikelihoodFieldModel(
     double z_hit, double z_rand, double sigma_hit, double max_occ_dist,
-    size_t max_beams, map_t * map, double laser_importance_factor);
+    size_t max_beams, 
+    bool enable_grid_based_beam_sampling, double grid_based_beam_sampling_cell_size, size_t max_beam_hits_per_cell, 
+    map_t * map, double laser_importance_factor);
 
   /*
    * @brief Run a sensor update on laser
@@ -187,7 +197,9 @@ public:
     double z_hit, double z_rand, double sigma_hit, double max_occ_dist,
     bool do_beamskip, double beam_skip_distance,
     double beam_skip_threshold, double beam_skip_error_threshold,
-    size_t max_beams, map_t * map, double laser_importance_factor);
+    size_t max_beams, 
+    bool enable_grid_based_beam_sampling, double grid_based_beam_sampling_cell_size, size_t max_beam_hits_per_cell, 
+    map_t * map, double laser_importance_factor);
 
   /*
    * @brief Run a sensor update on laser

@@ -29,8 +29,10 @@ namespace nav2_amcl
 
 BeamModel::BeamModel(
   double z_hit, double z_short, double z_max, double z_rand, double sigma_hit,
-  double lambda_short, double chi_outlier, size_t max_beams, map_t * map, double importance_factor)
-: Laser(max_beams, map)
+  double lambda_short, double chi_outlier, size_t max_beams, 
+  bool enable_grid_based_beam_sampling, double grid_based_beam_sampling_cell_size, size_t max_beam_hits_per_cell, 
+  map_t * map, double importance_factor)
+: Laser(max_beams, enable_grid_based_beam_sampling, grid_based_beam_sampling_cell_size, max_beam_hits_per_cell, map)
 {
   z_hit_ = z_hit;
   z_rand_ = z_rand;

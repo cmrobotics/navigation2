@@ -258,6 +258,21 @@ AmclNode::AmclNode()
     "use_cluster_averaging", rclcpp::ParameterValue(false),
     "Average (with weights) cluster centroid positions when calculating curren pose"
   );
+
+  add_parameter(
+    "enable_grid_based_beam_sampling", rclcpp::ParameterValue(false),
+    "Divide map into a grid and keep count of beam hits in each cell"
+  );
+
+  add_parameter(
+    "grid_based_beam_sampling_cell_size", rclcpp::ParameterValue(0.25),
+    "Grid based beam sampling cell size, if enabled"
+  );
+
+  add_parameter(
+    "max_beam_hits_per_cell", rclcpp::ParameterValue(2),
+    "Max number of beams to consider for scan matching in each cell of the map"
+  );
 }
 
 AmclNode::~AmclNode()
@@ -1242,19 +1257,25 @@ AmclNode::createLaserObject()
   if (sensor_model_type_ == "beam") {
     return new nav2_amcl::BeamModel(
       z_hit_, z_short_, z_max_, z_rand_, sigma_hit_, lambda_short_,
-      0.0, max_beams_, map_, laser_importance_factor_);
+      0.0, max_beams_, 
+      enable_grid_based_beam_sampling_, grid_based_beam_sampling_cell_size_, max_beam_hits_per_cell_, 
+      map_, laser_importance_factor_);
   }
 
   if (sensor_model_type_ == "likelihood_field_prob") {
     return new nav2_amcl::LikelihoodFieldModelProb(
       z_hit_, z_rand_, sigma_hit_,
       laser_likelihood_max_dist_, do_beamskip_, beam_skip_distance_, beam_skip_threshold_,
-      beam_skip_error_threshold_, max_beams_, map_, laser_importance_factor_);
+      beam_skip_error_threshold_, max_beams_, 
+      enable_grid_based_beam_sampling_, grid_based_beam_sampling_cell_size_, max_beam_hits_per_cell_, 
+      map_, laser_importance_factor_);
   }
 
   return new nav2_amcl::LikelihoodFieldModel(
     z_hit_, z_rand_, sigma_hit_,
-    laser_likelihood_max_dist_, max_beams_, map_, laser_importance_factor_);
+    laser_likelihood_max_dist_, max_beams_, 
+    enable_grid_based_beam_sampling_, grid_based_beam_sampling_cell_size_, max_beam_hits_per_cell_, 
+    map_, laser_importance_factor_);
 }
 
 void
@@ -1286,6 +1307,9 @@ AmclNode::initParameters()
   get_parameter("initial_pose.z", initial_pose_z_);
   get_parameter("initial_pose.yaw", initial_pose_yaw_);
   get_parameter("max_beams", max_beams_);
+  get_parameter("enable_grid_based_beam_sampling", enable_grid_based_beam_sampling_);
+  get_parameter("grid_based_beam_sampling_cell_size", grid_based_beam_sampling_cell_size_);
+  get_parameter("max_beam_hits_per_cell", max_beam_hits_per_cell_);
   get_parameter("max_particles", max_particles_);
   get_parameter("min_particles", min_particles_);
   get_parameter("odom_frame_id", odom_frame_id_);
@@ -1481,6 +1505,8 @@ AmclNode::dynamicParametersCallback(
       } else if (param_name == "ext_pose_search_tolerance_sec") {
         ext_pose_search_tolerance_sec_ = parameter.as_double();
         reinit_ext_pose = true;
+      } else if (param_name == "grid_based_beam_sampling_cell_size") {
+        grid_based_beam_sampling_cell_size_ = parameter.as_double();
       }
     } else if (param_type == ParameterType::PARAMETER_STRING) {
       if (param_name == "base_frame_id") {
@@ -1511,6 +1537,8 @@ AmclNode::dynamicParametersCallback(
         set_initial_pose_ = parameter.as_bool();
       } else if (param_name == "first_map_only") {
         first_map_only_ = parameter.as_bool();
+      } else if (param_name == "enable_grid_based_beam_sampling") {
+        enable_grid_based_beam_sampling_ = parameter.as_bool();
       }
     } else if (param_type == ParameterType::PARAMETER_INTEGER) {
       if (param_name == "max_beams") {
@@ -1524,6 +1552,8 @@ AmclNode::dynamicParametersCallback(
         reinit_pf = true;
       } else if (param_name == "resample_interval") {
         resample_interval_ = parameter.as_int();
+      } else if (param_name == "max_beam_hits_per_cell") {
+        max_beam_hits_per_cell_ = parameter.as_int();
       }
     }
   }

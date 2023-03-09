@@ -411,6 +411,9 @@ protected:
   double laser_min_range_;
   std::string sensor_model_type_;
   int max_beams_;
+  bool enable_grid_based_beam_sampling_;
+  double grid_based_beam_sampling_cell_size_;
+  int max_beam_hits_per_cell_;
   int max_particles_;
   int min_particles_;
   std::string odom_frame_id_;

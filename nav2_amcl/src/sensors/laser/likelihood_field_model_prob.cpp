@@ -34,8 +34,10 @@ LikelihoodFieldModelProb::LikelihoodFieldModelProb(
   double beam_skip_distance,
   double beam_skip_threshold,
   double beam_skip_error_threshold,
-  size_t max_beams, map_t * map, double importance_factor)
-: Laser(max_beams, map)
+  size_t max_beams, 
+  bool enable_grid_based_beam_sampling, double grid_based_beam_sampling_cell_size, size_t max_beam_hits_per_cell, 
+  map_t * map, double importance_factor)
+: Laser(max_beams, enable_grid_based_beam_sampling, grid_based_beam_sampling_cell_size, max_beam_hits_per_cell, map)
 {
   z_hit_ = z_hit;
   z_rand_ = z_rand;

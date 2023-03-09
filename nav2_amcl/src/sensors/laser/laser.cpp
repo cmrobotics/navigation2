@@ -29,11 +29,18 @@
 namespace nav2_amcl
 {
 
-Laser::Laser(size_t max_beams, map_t * map)
+Laser::Laser(size_t max_beams,
+  bool enable_grid_based_beam_sampling, double grid_based_beam_sampling_cell_size, size_t max_beam_hits_per_cell, 
+  map_t * map)
 : max_samples_(0), max_obs_(0), temp_obs_(NULL)
 {
   max_beams_ = max_beams;
   map_ = map;
+  max_beam_hits_per_cell_ = max_beam_hits_per_cell;
+  enable_grid_based_beam_sampling_ = enable_grid_based_beam_sampling;
+  grid_based_beam_sampling_cell_size_ = grid_based_beam_sampling_cell_size;
+  max_beam_hits_per_cell_ = max_beam_hits_per_cell;
+  sampled_beam_indexes_for_particle_w_max_weight_.resize(0);
 }
 
 Laser::~Laser()
