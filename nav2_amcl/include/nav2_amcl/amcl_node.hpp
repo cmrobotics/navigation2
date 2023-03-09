@@ -43,7 +43,8 @@
 #include "std_srvs/srv/empty.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
-#include "pluginlib/class_loader.hpp"
+#include "laser_geometry/laser_geometry.hpp"
+#include "visualization_msgs/msg/marker.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include "cmr_msgs/srv/get_status.hpp"
@@ -200,6 +201,8 @@ protected:
     pose_pub_;
   rclcpp_lifecycle::LifecyclePublisher<nav2_msgs::msg::ParticleCloud>::SharedPtr
     particle_cloud_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::Marker>::SharedPtr
+    marker_pub_;
   /*
    * @brief Handle with an initial pose estimate is received
    */
@@ -356,13 +359,21 @@ protected:
    * @brief Publish particle cloud
    */
   void publishParticleCloud(const pf_sample_set_t * set);
+
+  /*
+  * @brief Draw laser points transformed into the map frame according to the current estimate
+  * Can be a useful visualization when running an AMCL on rosbag data
+  */
+  void drawLaserWithCurrentpose();
+  laser_geometry::LaserProjection projector_;
+
   /*
   * @brief Get the current state estimate hypothesis from the particle cloud
   * by calculating mean weighted centroid among cluster centroids
   */
   bool getMeanWeightedClustersCentroid(amcl_hyp_t & mean_centroid_hyp);
   /*
-   * @brief Get the current state estimat hypothesis from the particle cloud
+   * @brief Get the current state estimate hypothesis from the particle cloud
    */
   bool getMaxWeightHyp(amcl_hyp_t & max_weight_hyp);
   /*
@@ -440,6 +451,7 @@ protected:
   std::string map_topic_{"map"};
   bool use_cluster_averaging_;
   bool use_augmented_mcl_;
+  bool draw_laser_points_;
 };
 
 }  // namespace nav2_amcl

@@ -42,6 +42,9 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/create_timer_ros.h"
+#include "sensor_msgs/msg/point_cloud.hpp"
+#include "sensor_msgs/point_cloud_conversion.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <eigen3/Eigen/Eigenvalues>
@@ -276,6 +279,11 @@ AmclNode::AmclNode(const rclcpp::NodeOptions & options)
     "Use Augmented MCL approach for resampling"
   );
 
+  add_parameter(
+    "draw_laser_points", rclcpp::ParameterValue(false),
+    "Draw laser points relative to current pose estimate. Can be useful while running AMCL locally on top of a rosbag and you need to see how"
+  );
+
   diagnostic_updater_ = std::make_shared<diagnostic_updater::Updater>(this);
 }
 
@@ -315,6 +323,7 @@ AmclNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
   // Lifecycle publishers must be explicitly activated
   pose_pub_->on_activate();
   particle_cloud_pub_->on_activate();
+  marker_pub_->on_activate();
 
   first_pose_sent_ = false;
 
@@ -883,7 +892,67 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
       sendMapToOdomTransform(transform_expiration);
     }
   }
-  diagnostic_updater_->force_update();
+
+  if(draw_laser_points_) {
+    sensor_msgs::msg::PointCloud2 cloud2;
+    projector_.transformLaserScanToPointCloud(base_frame_id_, *laser_scan, cloud2, *tf_buffer_, laser_max_range_);
+
+    sensor_msgs::msg::PointCloud cloud1;
+    sensor_msgs::convertPointCloud2ToPointCloud(cloud2, cloud1);
+
+    visualization_msgs::msg::Marker points;
+    points.id = 100000;
+    points.header.frame_id = "map";
+    points.header.stamp = laser_scan->header.stamp;
+    points.action = visualization_msgs::msg::Marker::DELETE;
+
+    points.ns = "bla_scans";
+    points.type = visualization_msgs::msg::Marker::POINTS;
+    points.scale.x = 0.05;
+    points.scale.y = 0.05;
+
+    marker_pub_->publish(points);
+
+
+    tf2::Transform odom_pose;
+    tf2::fromMsg(latest_odom_pose_.pose, odom_pose);
+    auto map_pose = latest_tf_.inverse() * odom_pose;
+
+    double yaw,pitch,roll;
+    map_pose.getBasis().getEulerYPR(yaw, pitch, roll);
+
+    points.action = visualization_msgs::msg::Marker::ADD;
+
+    tf2::Quaternion quat;
+    quat.setRPY(0, 0, yaw);
+
+    points.pose.position.x = map_pose.getOrigin().x();
+    points.pose.position.y = map_pose.getOrigin().y();
+    points.pose.position.z = 0;
+    points.pose.orientation.x = quat.x();
+    points.pose.orientation.y = quat.y();
+    points.pose.orientation.z = quat.z();
+    points.pose.orientation.w = quat.w();
+
+    for(size_t i = 0; i < cloud1.points.size(); i++){
+      geometry_msgs::msg::Point p;
+      p.x = cloud1.points[i].x;
+      p.y = cloud1.points[i].y;
+      p.z = 0;
+      
+      points.points.push_back(p);
+    }
+
+    points.color.r = 0.0;
+    points.color.g = 0.0;
+    points.color.b = 1.0;
+    points.color.a = 1.0;
+
+    marker_pub_->publish(points);
+  }
+
+
+  diagnostic_updater_.force_update();
 }
 
 bool AmclNode::addNewScanner(
@@ -1027,6 +1096,11 @@ AmclNode::publishParticleCloud(const pf_sample_set_t * set)
   }
 
   particle_cloud_pub_->publish(std::move(cloud_with_weights_msg));
+}
+
+void
+AmclNode::drawLaserWithCurrentpose(){
+  
 }
 
 bool
@@ -1300,6 +1374,7 @@ AmclNode::initParameters()
   get_parameter("ext_pose_search_tolerance_sec", ext_pose_search_tolerance_sec_);
   get_parameter("use_cluster_averaging", use_cluster_averaging_);
   get_parameter("use_augmented_mcl", use_augmented_mcl_);
+  get_parameter("draw_laser_points", draw_laser_points_);
   
   save_pose_period_ = tf2::durationFromSec(1.0 / save_pose_rate);
   transform_tolerance_ = tf2::durationFromSec(tmp_tol);
@@ -1755,6 +1830,8 @@ AmclNode::initPubSub()
   pose_pub_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "amcl_pose",
     rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
+  
+  marker_pub_ = create_publisher<visualization_msgs::msg::Marker>("amcl_adjusted_scans", 1);
 
   initial_pose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "initialpose", rclcpp::SystemDefaultsQoS(),
