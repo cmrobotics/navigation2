@@ -195,6 +195,9 @@ protected:
     pose_pub_;
   rclcpp_lifecycle::LifecyclePublisher<nav2_msgs::msg::ParticleCloud>::SharedPtr
     particle_cloud_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::LaserScan>::SharedPtr
+    grid_laser_scan_pub_;
+
   /*
    * @brief Handle with an initial pose estimate is received
    */

@@ -58,6 +58,8 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
 
   total_weight = 0.0;
 
+  double max_particle_weight = -1;
+
   const double map_x_size_meters = self->map_->size_x * self->map_->scale;
   const double map_y_size_meters = self->map_->size_y * self->map_->scale;
 
@@ -165,6 +167,13 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
     }
 
     sample->weight *= pow(p, self->importance_factor_); // Accroding to Probabilistic Robotics, 6.3.4
+    
+    // keep note on which beams were selected for scan matching for visualization in amcl_node
+    if(sample->weight > max_particle_weight)
+    {
+      self->sampled_beam_indexes_for_particle_w_max_weight_ = sampled_beam_indexes_;
+      max_particle_weight = sample->weight;
+    }  
     total_weight += sample->weight;
   }
 

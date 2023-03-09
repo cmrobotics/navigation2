@@ -330,6 +330,7 @@ AmclNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
   // Lifecycle publishers must be explicitly activated
   pose_pub_->on_activate();
   particle_cloud_pub_->on_activate();
+  grid_laser_scan_pub_->on_activate();
 
   first_pose_sent_ = false;
 
@@ -374,6 +375,7 @@ AmclNode::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 
   // Lifecycle publishers must be explicitly deactivated
   pose_pub_->on_deactivate();
+  grid_laser_scan_pub_->on_deactivate();
   particle_cloud_pub_->on_deactivate();
 
   // reset dynamic parameter handler
@@ -415,6 +417,7 @@ AmclNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
   // PubSub
   pose_pub_.reset();
   particle_cloud_pub_.reset();
+  grid_laser_scan_pub_.reset();
 
   // Odometry
   motion_model_.reset();
@@ -1035,6 +1038,16 @@ bool AmclNode::updateFilter(
       (i * angle_increment);
   }
   lasers_[laser_index]->sensorUpdate(pf_, reinterpret_cast<nav2_amcl::LaserData *>(&ldata));
+
+  // Publish laser visualization for selected beams
+  auto grid_filtered_laser = std::make_shared<sensor_msgs::msg::LaserScan>(*laser_scan);
+  for (int i = 0; i < ldata.range_count; i++) {
+    auto sampled_beams = lasers_[laser_index]->sampled_beam_indexes_for_particle_w_max_weight_;
+    if(std::find(sampled_beams.begin(), sampled_beams.end(), i) == sampled_beams.end())
+      grid_filtered_laser->ranges[i] = ldata.range_max;
+  }
+  grid_laser_scan_pub_->publish(*grid_filtered_laser);
+
   lasers_update_[laser_index] = false;
   pf_odom_pose_ = pose;
   return true;
@@ -1759,6 +1772,9 @@ AmclNode::initPubSub()
   pose_pub_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "amcl_pose",
     rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
+
+  grid_laser_scan_pub_ = create_publisher<sensor_msgs::msg::LaserScan>(
+    "grid_sampled_laser", rclcpp::SensorDataQoS());
 
   initial_pose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "initialpose", rclcpp::SystemDefaultsQoS(),
