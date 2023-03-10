@@ -29,10 +29,8 @@ namespace nav2_amcl
 
 LikelihoodFieldModel::LikelihoodFieldModel(
   double z_hit, double z_rand, double sigma_hit,
-  double max_occ_dist, size_t max_beams,
-  bool enable_grid_based_beam_sampling, double grid_based_beam_sampling_cell_size, size_t max_beam_hits_per_cell, 
-  map_t * map, double importance_factor)
-: Laser(max_beams, enable_grid_based_beam_sampling, grid_based_beam_sampling_cell_size, max_beam_hits_per_cell, map)
+  double max_occ_dist, size_t max_beams, map_t * map, double importance_factor)
+: Laser(max_beams, map)
 {
   z_hit_ = z_hit;
   z_rand_ = z_rand;
@@ -58,8 +56,6 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
 
   total_weight = 0.0;
 
-  double max_particle_weight = -1;
-
   // Compute the sample weights
   for (j = 0; j < set->sample_count; j++) {
     sample = set->samples + j;
@@ -80,12 +76,6 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
     if (step < 1) {
       step = 1;
     }
-
-    // initialize grid beam counter
-    fill(self->cell_beam_count_for_current_particle_.begin(), self->cell_beam_count_for_current_particle_.end(), 0);
-    
-    std::vector<int> sampled_beam_indexes_;
-    sampled_beam_indexes_.resize(0);
 
     for (i = 0; i < data->range_count; i += step) {
       obs_range = data->ranges[i][0];
@@ -117,28 +107,6 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
       if (!MAP_VALID(self->map_, mi, mj)) {
         z = self->map_->max_occ_dist;
       } else {
-
-        if(self->enable_grid_based_beam_sampling_)
-        {
-          
-          // Find which sampling grid cell this beam belongs to based on hit, and filter out beam hits if there were more than max_beam_hits_per_cell_ in that cell.
-
-          // index = (laser_hit_world_coordinates - map_origin_in_world_coorinate) / cell_size
-          // self->map_->origin_x is AMCL's internal representation of origin, which is in cell coordinates with the global costmap's scale. 
-          // It is also offset from the map center. See convertMap() in amcl_node
-          // We have to first remove that offset, remove the global costmap scaling component, and apply the grid sampling scaling component
-          
-          const int grid_x_index = int((hit.v[0] - (self->map_->origin_x - (self->map_->size_x / 2.0)* self->map_->scale))/self->grid_based_beam_sampling_cell_size_);
-          const int grid_y_index = int((hit.v[1] - (self->map_->origin_y - (self->map_->size_y / 2.0)* self->map_->scale))/self->grid_based_beam_sampling_cell_size_);
-
-          const int beam_sampling_cell_index = grid_x_index + grid_y_index * self->beam_sampling_max_x_grid_cells_;
-          self->cell_beam_count_for_current_particle_.at(beam_sampling_cell_index) = ++self->cell_beam_count_for_current_particle_.at(beam_sampling_cell_index);
-          
-          if(self->cell_beam_count_for_current_particle_[beam_sampling_cell_index] > self->max_beam_hits_per_cell_ )
-            continue; // Skip inclusion in the gaussian model
-        }
-        sampled_beam_indexes_.push_back(i);
-
         z = self->map_->cells[MAP_INDEX(self->map_, mi, mj)].occ_dist;
       }
       // Gaussian model
@@ -158,13 +126,6 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
     }
 
     sample->weight *= pow(p, self->importance_factor_); // Accroding to Probabilistic Robotics, 6.3.4
-    
-    // keep note on which beams were selected for scan matching for visualization in amcl_node
-    if(sample->weight > max_particle_weight)
-    {
-      self->sampled_beam_indexes_for_particle_w_max_weight_ = sampled_beam_indexes_;
-      max_particle_weight = sample->weight;
-    }  
     total_weight += sample->weight;
   }
 

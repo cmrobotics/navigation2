@@ -1037,16 +1037,47 @@ bool AmclNode::updateFilter(
     ldata.ranges[i][1] = angle_min +
       (i * angle_increment);
   }
-  lasers_[laser_index]->sensorUpdate(pf_, reinterpret_cast<nav2_amcl::LaserData *>(&ldata));
 
-  // Publish laser visualization for selected beams
   auto grid_filtered_laser = std::make_shared<sensor_msgs::msg::LaserScan>(*laser_scan);
-  for (int i = 0; i < ldata.range_count; i++) {
-    auto sampled_beams = lasers_[laser_index]->sampled_beam_indexes_for_particle_w_max_weight_;
-    if(std::find(sampled_beams.begin(), sampled_beams.end(), i) == sampled_beams.end())
-      grid_filtered_laser->ranges[i] = ldata.range_max;
+
+  // Beam grid sampling
+  if(enable_grid_based_beam_sampling_)
+  {
+    // Grid size 
+    const int beam_sampling_max_x_grid_cells = ldata.range_max*2.0/grid_based_beam_sampling_cell_size_; // need this later in sensorFunction
+    const int beam_sampling_max_y_grid_cells = ldata.range_max*2.0/grid_based_beam_sampling_cell_size_;
+
+    std::vector<int> cell_beam_count;
+    cell_beam_count.resize(beam_sampling_max_x_grid_cells * beam_sampling_max_y_grid_cells);
+    
+    for (int beam_ind = 0; beam_ind < ldata.range_count; beam_ind++) {
+      const double obs_range = ldata.ranges[beam_ind][0];
+
+      if (obs_range >= ldata.range_max)
+        continue;
+      
+      const double obs_bearing = ldata.ranges[beam_ind][1];
+      double dx = obs_range * cos(obs_bearing);
+      double dy = obs_range * sin(obs_bearing);  
+
+      // Find which sampling grid cell this beam belongs to based on hit
+      // dx and dy can theoretically range from - to + max range
+      const int grid_x_index = int(dx / grid_based_beam_sampling_cell_size_) + beam_sampling_max_x_grid_cells/2;
+      const int grid_y_index = int(dy / grid_based_beam_sampling_cell_size_) + beam_sampling_max_y_grid_cells/2;
+
+      const int beam_sampling_cell_index = grid_x_index + grid_y_index * beam_sampling_max_x_grid_cells;
+      cell_beam_count.at(beam_sampling_cell_index) = ++cell_beam_count.at(beam_sampling_cell_index);
+      
+      if(cell_beam_count[beam_sampling_cell_index] > max_beam_hits_per_cell_ )
+      {
+        ldata.ranges[beam_ind][0] = ldata.range_max;
+        grid_filtered_laser->ranges[beam_ind] = ldata.range_max; // for visualization
+      }  
+    }
   }
   grid_laser_scan_pub_->publish(*grid_filtered_laser);
+
+  lasers_[laser_index]->sensorUpdate(pf_, reinterpret_cast<nav2_amcl::LaserData *>(&ldata));
 
   lasers_update_[laser_index] = false;
   pf_odom_pose_ = pose;
@@ -1270,25 +1301,19 @@ AmclNode::createLaserObject()
   if (sensor_model_type_ == "beam") {
     return new nav2_amcl::BeamModel(
       z_hit_, z_short_, z_max_, z_rand_, sigma_hit_, lambda_short_,
-      0.0, max_beams_, 
-      enable_grid_based_beam_sampling_, grid_based_beam_sampling_cell_size_, max_beam_hits_per_cell_, 
-      map_, laser_importance_factor_);
+      0.0, max_beams_, map_, laser_importance_factor_);
   }
 
   if (sensor_model_type_ == "likelihood_field_prob") {
     return new nav2_amcl::LikelihoodFieldModelProb(
       z_hit_, z_rand_, sigma_hit_,
       laser_likelihood_max_dist_, do_beamskip_, beam_skip_distance_, beam_skip_threshold_,
-      beam_skip_error_threshold_, max_beams_, 
-      enable_grid_based_beam_sampling_, grid_based_beam_sampling_cell_size_, max_beam_hits_per_cell_, 
-      map_, laser_importance_factor_);
+      beam_skip_error_threshold_, max_beams_, map_, laser_importance_factor_);
   }
 
   return new nav2_amcl::LikelihoodFieldModel(
     z_hit_, z_rand_, sigma_hit_,
-    laser_likelihood_max_dist_, max_beams_, 
-    enable_grid_based_beam_sampling_, grid_based_beam_sampling_cell_size_, max_beam_hits_per_cell_, 
-    map_, laser_importance_factor_);
+    laser_likelihood_max_dist_, max_beams_, map_, laser_importance_factor_);
 }
 
 void
