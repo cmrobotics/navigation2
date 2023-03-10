@@ -66,6 +66,8 @@ public:
   bool enable_grid_based_beam_sampling_;
   double grid_based_beam_sampling_cell_size_;
   size_t max_beam_hits_per_cell_;
+  int beam_sampling_max_x_grid_cells_;
+  std::vector<size_t> cell_beam_count_for_current_particle_;
   std::vector<int> sampled_beam_indexes_for_particle_w_max_weight_;
 
 protected:

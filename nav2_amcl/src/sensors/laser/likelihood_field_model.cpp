@@ -60,15 +60,6 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
 
   double max_particle_weight = -1;
 
-  const double map_x_size_meters = self->map_->size_x * self->map_->scale;
-  const double map_y_size_meters = self->map_->size_y * self->map_->scale;
-
-  const int beam_sampling_max_x_grid_cells = map_x_size_meters/self->grid_based_beam_sampling_cell_size_;
-  const int beam_sampling_max_y_grid_cells = map_y_size_meters/self->grid_based_beam_sampling_cell_size_;
-
-  std::vector<size_t> grid_beam_count;
-  grid_beam_count.resize(beam_sampling_max_x_grid_cells * beam_sampling_max_y_grid_cells);
-
   // Compute the sample weights
   for (j = 0; j < set->sample_count; j++) {
     sample = set->samples + j;
@@ -91,7 +82,7 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
     }
 
     // initialize grid beam counter
-    fill(grid_beam_count.begin(), grid_beam_count.end(), 0);
+    fill(self->cell_beam_count_for_current_particle_.begin(), self->cell_beam_count_for_current_particle_.end(), 0);
     
     std::vector<int> sampled_beam_indexes_;
     sampled_beam_indexes_.resize(0);
@@ -140,10 +131,10 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
           const int grid_x_index = int((hit.v[0] - (self->map_->origin_x - (self->map_->size_x / 2.0)* self->map_->scale))/self->grid_based_beam_sampling_cell_size_);
           const int grid_y_index = int((hit.v[1] - (self->map_->origin_y - (self->map_->size_y / 2.0)* self->map_->scale))/self->grid_based_beam_sampling_cell_size_);
 
-          const int beam_sampling_cell_index = grid_x_index + grid_y_index * beam_sampling_max_x_grid_cells;
-          grid_beam_count.at(beam_sampling_cell_index) = ++grid_beam_count.at(beam_sampling_cell_index);
+          const int beam_sampling_cell_index = grid_x_index + grid_y_index * self->beam_sampling_max_x_grid_cells_;
+          self->cell_beam_count_for_current_particle_.at(beam_sampling_cell_index) = ++self->cell_beam_count_for_current_particle_.at(beam_sampling_cell_index);
           
-          if(grid_beam_count[beam_sampling_cell_index] > self->max_beam_hits_per_cell_ )
+          if(self->cell_beam_count_for_current_particle_[beam_sampling_cell_index] > self->max_beam_hits_per_cell_ )
             continue; // Skip inclusion in the gaussian model
         }
         sampled_beam_indexes_.push_back(i);

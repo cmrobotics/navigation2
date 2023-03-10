@@ -41,6 +41,14 @@ Laser::Laser(size_t max_beams,
   grid_based_beam_sampling_cell_size_ = grid_based_beam_sampling_cell_size;
   max_beam_hits_per_cell_ = max_beam_hits_per_cell;
   sampled_beam_indexes_for_particle_w_max_weight_.resize(0);
+
+  const double map_x_size_meters = map->size_x * map->scale;
+  const double map_y_size_meters = map->size_y * map->scale;
+
+  beam_sampling_max_x_grid_cells_ = map_x_size_meters/grid_based_beam_sampling_cell_size_; // need this later in sensorFunction
+  const int beam_sampling_max_y_grid_cells = map_y_size_meters/grid_based_beam_sampling_cell_size_;
+
+  cell_beam_count_for_current_particle_.resize(beam_sampling_max_x_grid_cells_ * beam_sampling_max_y_grid_cells);
 }
 
 Laser::~Laser()
