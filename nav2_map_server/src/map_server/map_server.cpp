@@ -199,6 +199,9 @@ void MapServer::loadMapCallback(
   if (loadMapResponseFromYaml(request->map_url, response)) {
     auto occ_grid = std::make_unique<nav_msgs::msg::OccupancyGrid>(msg_);
     occ_pub_->publish(std::move(occ_grid));  // publish new map
+
+    // update yaml_filename parameter
+    set_parameter(rclcpp::Parameter("yaml_filename", request->map_url));
   }
 }
 
