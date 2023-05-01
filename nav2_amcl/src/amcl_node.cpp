@@ -42,6 +42,9 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/create_timer_ros.h"
+#include "sensor_msgs/msg/point_cloud.hpp"
+// #include "sensor_msgs/point_cloud_conversion.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <eigen3/Eigen/Eigenvalues>
@@ -258,6 +261,11 @@ AmclNode::AmclNode()
     "use_cluster_averaging", rclcpp::ParameterValue(false),
     "Average (with weights) cluster centroid positions when calculating curren pose"
   );
+
+  add_parameter(
+    "draw_laser_points", rclcpp::ParameterValue(false),
+    "Draw laser points relative to current pose estimate. Can be useful while running AMCL locally on top of a rosbag and you need to see how"
+  );
 }
 
 AmclNode::~AmclNode()
@@ -315,6 +323,7 @@ AmclNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
   // Lifecycle publishers must be explicitly activated
   pose_pub_->on_activate();
   particle_cloud_pub_->on_activate();
+  marker_pub_->on_activate();
 
   first_pose_sent_ = false;
 
@@ -901,6 +910,119 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
       sendMapToOdomTransform(transform_expiration);
     }
   }
+
+  if(draw_laser_points_) {
+    // RCLCPP_INFO(get_logger(), "Calculating laset hit coords");
+    visualization_msgs::msg::Marker points;
+    points.id = 100000;
+    points.header.frame_id = "map";
+    points.header.stamp = laser_scan->header.stamp;
+    points.action = visualization_msgs::msg::Marker::DELETE;
+
+    points.ns = "bla_scans";
+    points.type = visualization_msgs::msg::Marker::POINTS;
+    points.scale.x = 0.05;
+    points.scale.y = 0.05;
+
+    marker_pub_->publish(points);
+
+
+    points.action = visualization_msgs::msg::Marker::ADD;
+    // calculate laser pose in map frame
+    tf2::Transform base_footrpint_to_odom;
+
+    tf2::fromMsg(latest_odom_pose_.pose, base_footrpint_to_odom);
+    auto base_footprint_to_map = latest_tf_.inverse() * base_footrpint_to_odom;
+
+    pf_vector_t base_footprint_to_map_vec = pf_vector_zero();
+    base_footprint_to_map_vec.v[0] = base_footprint_to_map.getOrigin().x();
+    base_footprint_to_map_vec.v[1] = base_footprint_to_map.getOrigin().y();
+    base_footprint_to_map_vec.v[2] = tf2::getYaw(base_footprint_to_map.getRotation());
+
+    RCLCPP_INFO(get_logger(), "Calculating laset hit coords: %f, %f, %f", base_footprint_to_map_vec.v[0], base_footprint_to_map_vec.v[1], base_footprint_to_map_vec.v[2]);
+
+    pf_vector_t laser_pose;
+    lasers_[laser_index]->GetLaserPose(laser_pose);
+
+    auto laser_to_map_vec = pf_vector_coord_add(laser_pose, base_footprint_to_map_vec);
+
+    RCLCPP_INFO(get_logger(), "Calculating laset hit coords - 2 : %f, %f, %f", laser_to_map_vec.v[0], laser_to_map_vec.v[1], laser_to_map_vec.v[2]);
+
+    geometry_msgs::msg::QuaternionStamped min_q, inc_q;
+    min_q.header.stamp = laser_scan->header.stamp;
+    min_q.header.frame_id = nav2_util::strip_leading_slash(laser_scan->header.frame_id);
+    min_q.quaternion = orientationAroundZAxis(laser_scan->angle_min);
+
+    inc_q.header = min_q.header;
+    inc_q.quaternion = orientationAroundZAxis(laser_scan->angle_min + laser_scan->angle_increment);
+    try {
+      tf_buffer_->transform(min_q, min_q, base_frame_id_);
+      tf_buffer_->transform(inc_q, inc_q, base_frame_id_);
+    } catch (tf2::TransformException & e) {
+      RCLCPP_WARN(
+        get_logger(), "Unable to transform min/max laser angles into base frame: %s",
+        e.what());
+      // return false;
+    }
+    double angle_min = tf2::getYaw(min_q.quaternion);
+    double angle_increment = tf2::getYaw(inc_q.quaternion) - angle_min;
+
+    // wrapping angle to [-pi .. pi]
+    angle_increment = fmod(angle_increment + 5 * M_PI, 2 * M_PI) - M_PI;
+    for(size_t i = 0; i < laser_scan->ranges.size(); i++){
+      auto range = laser_scan->ranges[i];
+      auto bearing = angle_min + (i * angle_increment);
+
+      // This model ignores max range readings
+      if (range >= laser_scan->range_max) {
+        continue;
+      }
+
+      // Check for NaN
+      if (range != range) {
+        continue;
+      }
+
+      pf_vector_t beam_hit_map;
+      beam_hit_map.v[0] = laser_to_map_vec.v[0] + range * cos(laser_to_map_vec.v[2] + bearing);
+      beam_hit_map.v[1] = laser_to_map_vec.v[1] + range * sin(laser_to_map_vec.v[2] + bearing);
+
+      // RCLCPP_INFO(get_logger(), "beam_hit_map: %f %f", beam_hit_map.v[0], beam_hit_map.v[1]);
+
+      // RCLCPP_INFO(get_logger(), "beam_hit_map - 2: %f %f; %f %f %f", range, bearing, laser_to_map_vec.v[0], laser_to_map_vec.v[1],
+      // laser_to_map_vec.v[2]);
+
+      geometry_msgs::msg::Point p;
+      p.x = beam_hit_map.v[0];
+      p.y = beam_hit_map.v[1];
+      p.z = 0;
+
+      points.points.push_back(p);
+    }
+
+    double yaw,pitch,roll;
+    base_footprint_to_map.getBasis().getEulerYPR(yaw, pitch, roll);
+
+    tf2::Quaternion quat;
+    quat.setRPY(0, 0, yaw);
+
+    points.pose.position.x = base_footprint_to_map.getOrigin().x();
+    points.pose.position.y = base_footprint_to_map.getOrigin().y();
+    points.pose.position.z = 0;
+    points.pose.orientation.x = quat.x();
+    points.pose.orientation.y = quat.y();
+    points.pose.orientation.z = quat.z();
+    points.pose.orientation.w = quat.w();
+
+    points.color.r = 0.0;
+    points.color.g = 0.0;
+    points.color.b = 1.0;
+    points.color.a = 1.0;
+
+    marker_pub_->publish(points);
+  }
+
+
   diagnostic_updater_.force_update();
 }
 
@@ -1045,6 +1167,11 @@ AmclNode::publishParticleCloud(const pf_sample_set_t * set)
   }
 
   particle_cloud_pub_->publish(std::move(cloud_with_weights_msg));
+}
+
+void
+AmclNode::drawLaserWithCurrentpose(){
+  
 }
 
 bool
@@ -1317,6 +1444,7 @@ AmclNode::initParameters()
   get_parameter("max_particle_gen_prob_ext_pose", max_particle_gen_prob_ext_pose_);
   get_parameter("ext_pose_search_tolerance_sec", ext_pose_search_tolerance_sec_);
   get_parameter("use_cluster_averaging", use_cluster_averaging_);
+  get_parameter("draw_laser_points", draw_laser_points_);
   
   save_pose_period_ = tf2::durationFromSec(1.0 / save_pose_rate);
   transform_tolerance_ = tf2::durationFromSec(tmp_tol);
@@ -1729,6 +1857,8 @@ AmclNode::initPubSub()
   pose_pub_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "amcl_pose",
     rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
+  
+  marker_pub_ = create_publisher<visualization_msgs::msg::Marker>("amcl_adjusted_scans", 1);
 
   initial_pose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "initialpose", rclcpp::SystemDefaultsQoS(),

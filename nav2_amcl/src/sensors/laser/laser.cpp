@@ -70,4 +70,10 @@ Laser::SetLaserPose(pf_vector_t & laser_pose)
   laser_pose_ = laser_pose;
 }
 
+void
+Laser::GetLaserPose(pf_vector_t & out_laser_pose)
+{
+  out_laser_pose = laser_pose_;
+}
+
 }  // namespace nav2_amcl
