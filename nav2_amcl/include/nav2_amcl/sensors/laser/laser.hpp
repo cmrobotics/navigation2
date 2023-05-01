@@ -57,10 +57,16 @@ public:
   virtual bool sensorUpdate(pf_t * pf, LaserData * data) = 0;
 
   /*
-   * @brief Set the laser pose from an update
+   * @brief Set the laser pose in the robot base frame
    * @param laser_pose Pose of the laser
    */
   void SetLaserPose(pf_vector_t & laser_pose);
+
+  /*
+   * @brief Get the laser pose in the robot base frame
+   * @param out_laser_pose Pose of the laser in the base frame
+   */
+  void GetLaserPose(pf_vector_t & out_laser_pose);
 
 protected:
   double z_hit_;
