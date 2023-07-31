@@ -44,7 +44,7 @@
 #include "tf2_ros/create_timer_ros.h"
 #include "sensor_msgs/msg/point_cloud.hpp"
 // #include "sensor_msgs/point_cloud_conversion.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <eigen3/Eigen/Eigenvalues>
@@ -1005,7 +1005,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
   }
 
 
-  diagnostic_updater_.force_update();
+  diagnostic_updater_->force_update();
 }
 
 bool AmclNode::addNewScanner(

@@ -43,6 +43,7 @@
 #include "std_srvs/srv/empty.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
+#include "pluginlib/class_loader.hpp"
 #include "laser_geometry/laser_geometry.hpp"
 #include "visualization_msgs/msg/marker.hpp"
 
