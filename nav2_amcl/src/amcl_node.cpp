@@ -302,11 +302,11 @@ AmclNode::AmclNode(const rclcpp::NodeOptions & options)
     "Seed value for random number generator used in the amcl node"
   );
   add_parameter(
-    "is_tf_to_update", rclcpp::ParameterValue(true),
+    "is_amcl_update_suspended", rclcpp::ParameterValue(false),
     "Wheter to update the tf map-odom"
   );
   add_parameter(
-    "tf_state_reset_timeout", rclcpp::ParameterValue(24.0f),
+    "amcl_update_suspension_timeout", rclcpp::ParameterValue(24),
     "Timeout to reactivete the tf map-odom update"
   );
 
@@ -631,23 +631,24 @@ AmclNode::getInitialPoseStatusCallback(
 }
 
 void
-AmclNode::setAmclTfStateCallback(
-  const std::shared_ptr<cmr_msgs::srv::SetAmclTfState::Request> request,
-  std::shared_ptr<cmr_msgs::srv::SetAmclTfState::Response> response)
+AmclNode::suspendAmclUpdateCallback(
+  const std::shared_ptr<cmr_msgs::srv::SuspendAmclUpdate::Request> request,
+  std::shared_ptr<cmr_msgs::srv::SuspendAmclUpdate::Response> response)
 {
-  is_tf_to_update_ = request->active;
+  is_amcl_update_suspended_ = request->suspend;
 
-  if (!is_tf_to_update_) {
-    reset_tf_state_timer_ = this->create_wall_timer(
-      std::chrono::seconds(static_cast<int>(tf_state_reset_timeout_)),
+  if (is_amcl_update_suspended_) {
+    enable_amcl_update_timer_ = this->create_wall_timer(
+      std::chrono::seconds(amcl_update_suspension_timeout_),
       [this] () -> void {
-        reset_tf_state_timer_->cancel();
-        this->is_tf_to_update_ = true;
-        RCLCPP_INFO(get_logger(), "Resetting tf state to active");
+        enable_amcl_update_timer_->cancel();
+        this->is_amcl_update_suspended_ = false;
+        RCLCPP_INFO(get_logger(), "Re-enabling AMCL update");
       });
   }
 
-  RCLCPP_INFO(get_logger(), "Setting tf state to %s", request->active ? "active" : "inactive");
+  RCLCPP_INFO(get_logger(), "AMCL update is %s", is_amcl_update_suspended_ ? "suspended" : "enabled");
+
   response->success = true;
 }
 
@@ -1301,7 +1302,7 @@ AmclNode::sendMapToOdomTransform(const tf2::TimePoint & transform_expiration)
   tmp_tf_stamped.child_frame_id = odom_frame_id_;
   tf2::impl::Converter<false, true>::convert(latest_tf_.inverse(), tmp_tf_stamped.transform);
 
-  if (is_tf_to_update_) {
+  if (!is_amcl_update_suspended_) {
     suspended_tf_stamped_ = tmp_tf_stamped;
     tf_broadcaster_->sendTransform(tmp_tf_stamped);
   }
@@ -1404,8 +1405,8 @@ AmclNode::initParameters()
   get_parameter("amcl_random_seed", amcl_seed_);
   get_parameter("gaussian_pdf_random_seed", gaussian_pdf_seed_);
   get_parameter("pf_random_seed", pf_seed_);
-  get_parameter("is_tf_to_update", is_tf_to_update_);
-  get_parameter("tf_state_reset_timeout", tf_state_reset_timeout_);
+  get_parameter("is_amcl_update_suspended", is_amcl_update_suspended_);
+  get_parameter("amcl_update_suspension_timeout", amcl_update_suspension_timeout_);
     
   save_pose_period_ = tf2::durationFromSec(1.0 / save_pose_rate);
   transform_tol_scan_odom_sec_ = tf2::durationFromSec(tmp_tol_odom);
@@ -1896,9 +1897,9 @@ AmclNode::initServices()
     "get_initial_pose_status",
     std::bind(&AmclNode::getInitialPoseStatusCallback, this, _1, _2));
 
-  set_amcl_tf_state_srv_ = this->create_service<cmr_msgs::srv::SetAmclTfState>(
-    "set_amcl_tf_state",
-    std::bind(&AmclNode::setAmclTfStateCallback, this, _1, _2));
+  suspend_amcl_update_srv_ = this->create_service<cmr_msgs::srv::SuspendAmclUpdate>(
+    "suspend_amcl_update",
+    std::bind(&AmclNode::suspendAmclUpdateCallback, this, _1, _2));
 }
 
 void
