@@ -334,7 +334,7 @@ protected:
   // AMCL update suspend related
   rclcpp::Service<cmr_msgs::srv::SuspendAmclUpdate>::SharedPtr suspend_amcl_update_srv_;
   rclcpp::TimerBase::SharedPtr enable_amcl_update_timer_;
-  bool is_amcl_update_suspended_;
+  bool is_amcl_update_suspended_{false};
   int amcl_update_suspension_timeout_;
   geometry_msgs::msg::TransformStamped suspended_tf_stamped_;
   

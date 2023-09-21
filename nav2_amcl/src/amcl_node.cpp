@@ -302,10 +302,6 @@ AmclNode::AmclNode(const rclcpp::NodeOptions & options)
     "Seed value for random number generator used in the amcl node"
   );
   add_parameter(
-    "is_amcl_update_suspended", rclcpp::ParameterValue(false),
-    "Wheter to update the tf map-odom"
-  );
-  add_parameter(
     "amcl_update_suspension_timeout", rclcpp::ParameterValue(24),
     "Timeout to reactivete the tf map-odom update"
   );
@@ -1405,7 +1401,6 @@ AmclNode::initParameters()
   get_parameter("amcl_random_seed", amcl_seed_);
   get_parameter("gaussian_pdf_random_seed", gaussian_pdf_seed_);
   get_parameter("pf_random_seed", pf_seed_);
-  get_parameter("is_amcl_update_suspended", is_amcl_update_suspended_);
   get_parameter("amcl_update_suspension_timeout", amcl_update_suspension_timeout_);
     
   save_pose_period_ = tf2::durationFromSec(1.0 / save_pose_rate);
