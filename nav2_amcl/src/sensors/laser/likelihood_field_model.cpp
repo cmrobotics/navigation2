@@ -93,6 +93,10 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
 
       pz = 0.0;
 
+      // 1. calc range for map range (i.e. where do we expect laser to hit)
+      // 2 calc map range hit pose 
+      // 3. if it is occupied,  add zero a distance from laser hit to map hit
+
       // Compute the endpoint of the beam
       hit.v[0] = pose.v[0] + obs_range * cos(pose.v[2] + obs_bearing);
       hit.v[1] = pose.v[1] + obs_range * sin(pose.v[2] + obs_bearing);
