@@ -377,6 +377,7 @@ Costmap2DROS::getParameters()
 void
 Costmap2DROS::setRobotFootprint(const std::vector<geometry_msgs::msg::Point> & points)
 {
+  std::lock_guard<std::mutex> lock(footprint_update_mutex_);
   unpadded_footprint_ = points;
   padded_footprint_ = points;
   padFootprint(padded_footprint_, footprint_padding_);
