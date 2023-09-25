@@ -44,13 +44,15 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
 {
   LikelihoodFieldModel * self;
   int i, j, step;
-  double z, pz;
+  double z, pz, perfect_pz;
   double p;
   double obs_range, obs_bearing;
   double total_weight;
+  double map_range;
   pf_sample_t * sample;
   pf_vector_t pose;
   pf_vector_t hit;
+  pf_vector_t perfect_hit;
 
   self = reinterpret_cast<LikelihoodFieldModel *>(data->laser);
 
@@ -92,10 +94,31 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
       }
 
       pz = 0.0;
+      perfect_pz = 0.0;
 
       // 1. calc range for map range (i.e. where do we expect laser to hit)
       // 2 calc map range hit pose 
       // 3. if it is occupied,  add zero a distance from laser hit to map hit
+
+      map_range = map_calc_range(
+        self->map_, pose.v[0], pose.v[1],
+        pose.v[2] + obs_bearing, data->range_max);
+
+      perfect_hit.v[0] = pose.v[0] + map_range * cos(pose.v[2] + obs_bearing);
+      perfect_hit.v[1] = pose.v[1] + map_range * sin(pose.v[2] + obs_bearing);
+
+      // Calc perfect hit point in map coords
+      int perfect_mi, perfect_mj;
+      perfect_mi = MAP_GXWX(self->map_, perfect_hit.v[0]);
+      perfect_mj = MAP_GYWY(self->map_, perfect_hit.v[1]);
+
+      // Check if perfect hit is occupied
+      // fprintf(stderr, "checking perfect hit occupancy\n");
+      if (MAP_VALID(self->map_, perfect_mi, perfect_mj)) {
+        if (self->map_->cells[MAP_INDEX(self->map_, perfect_mi, perfect_mj)].occ_state == 1) {
+          // calculate score based on perfect hit
+        }
+      }
 
       // Compute the endpoint of the beam
       hit.v[0] = pose.v[0] + obs_range * cos(pose.v[2] + obs_bearing);
