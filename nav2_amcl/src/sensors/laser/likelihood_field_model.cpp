@@ -44,8 +44,8 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
 {
   LikelihoodFieldModel * self;
   int i, j, step;
-  double z, pz, perfect_pz;
-  double p;
+  double z, pz;
+  double p, max_p;
   double obs_range, obs_bearing;
   double total_weight;
   double map_range;
@@ -58,6 +58,13 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
 
   total_weight = 0.0;
 
+  // Pre-compute a couple of things
+  double z_hit_denom = 2 * self->sigma_hit_ * self->sigma_hit_;
+  double z_rand_component = self->z_rand_ * (1.0 / data->range_max);
+  
+  double max_pz = self->z_hit_ + z_rand_component;
+  double max_pz_normalized = max_pz * max_pz * max_pz;
+
   // Compute the sample weights
   for (j = 0; j < set->sample_count; j++) {
     sample = set->samples + j;
@@ -67,10 +74,8 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
     pose = pf_vector_coord_add(self->laser_pose_, pose);
 
     p = 1.0;
+    max_p = 1.0;
 
-    // Pre-compute a couple of things
-    double z_hit_denom = 2 * self->sigma_hit_ * self->sigma_hit_;
-    double z_rand_mult = 1.0 / data->range_max;
 
     step = (data->range_count - 1) / (self->max_beams_ - 1);
 
@@ -94,7 +99,6 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
       }
 
       pz = 0.0;
-      perfect_pz = 0.0;
 
       // 1. calc range for map range (i.e. where do we expect laser to hit)
       // 2 calc map range hit pose 
@@ -117,6 +121,7 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
       if (MAP_VALID(self->map_, perfect_mi, perfect_mj)) {
         if (self->map_->cells[MAP_INDEX(self->map_, perfect_mi, perfect_mj)].occ_state == 1) {
           // calculate score based on perfect hit
+          max_p += max_pz_normalized;
         }
       }
 
@@ -140,7 +145,7 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
       // NOTE: this should have a normalization of 1/(sqrt(2pi)*sigma)
       pz += self->z_hit_ * exp(-(z * z) / z_hit_denom);
       // Part 2: random measurements
-      pz += self->z_rand_ * z_rand_mult;
+      pz += z_rand_component;
 
       // TODO(?): outlier rejection for short readings
 
@@ -154,6 +159,7 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
 
     sample->raw_weight *= p;
     sample->weight *= pow(p, self->importance_factor_); // According to Probabilistic Robotics, 6.3.4
+    sample->max_weight *= max_p;
     total_weight += sample->weight;
   }
 

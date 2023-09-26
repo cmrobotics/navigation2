@@ -76,6 +76,9 @@ typedef struct
   // used for calculating running averages 
   // as we want them to represent a real picture not the one skewed but importance factor
   double raw_weight;
+
+  // The maximum weight the particle can get being in this pose
+  double max_weight;
 } pf_sample_t;
 
 

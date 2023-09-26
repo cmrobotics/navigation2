@@ -96,6 +96,7 @@ pf_t * pf_alloc(
       sample->pose.v[2] = 0.0;
       sample->weight = 1.0 / max_samples;
       sample->raw_weight = 1.0 / max_samples;
+      sample->max_weight = 1.0 / max_samples;
     }
 
     // HACK: is 3 times max_samples enough?
@@ -273,6 +274,7 @@ void pf_update_sensor(pf_t * pf, pf_sensor_model_fn_t sensor_fn, void * sensor_d
   pf_sample_t * sample;
   double total;
   double total_raw = 0.0;
+  double total_max = 0.0;
 
   set = pf->sets + pf->current_set;
 
@@ -287,13 +289,17 @@ void pf_update_sensor(pf_t * pf, pf_sensor_model_fn_t sensor_fn, void * sensor_d
       sample->weight /= total;
 
       total_raw += sample->raw_weight;
+      total_max += sample->max_weight;
     }
+
+    fprintf(stderr, "AMCL: total_weigth - %f, total_max_weight - %f, rate - %f\n", total, total_max, total/total_max);
 
     // Normalize raw weights
     for(i = 0; i < set->sample_count; i++) {
       sample = set->samples + i;
       w_avg += sample->raw_weight;
       sample->raw_weight /= total_raw;
+      sample->max_weight /= total_max;
     }
 
     // Update running averages of likelihood of samples (Prob Rob p258)
@@ -424,8 +430,7 @@ void pf_update_resample(pf_t * pf)
 
   if(pf->ext_pose_is_valid){
     double total_weight = 0;
-    for(i = 0; i < set_a->sample_count; i++)
-    {
+    for(i = 0; i < set_a->sample_count; i++) {
 
       // See Improved LiDAR Probabilistic Localization for Autonomous Vehicles Using GNSS, #3.2 for details
       double distance = pow(set_a->samples[i].pose.v[0]-pf->ext_x, 2) / pf->cov_matrix[0] + 
@@ -460,6 +465,8 @@ void pf_update_resample(pf_t * pf)
       }
     }
   }
+
+  // compare total_weigh with total weight of max particles score
 
 
   // Build up cumulative probability table for resampling.
