@@ -26,6 +26,7 @@
 #include "nav2_regulated_pure_pursuit_controller/regulated_pure_pursuit_controller.hpp"
 #include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 #include "nav2_core/exceptions.hpp"
+#include <tf2_ros/static_transform_broadcaster.h>
 
 class RclCppFixture
 {
@@ -648,20 +649,25 @@ TEST(RegulatedPurePursuitTest, extended_collision_check)
   std::string name = "PathFollower";
   auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
   auto costmap = std::make_shared<nav2_costmap_2d::Costmap2DROS>("fake_costmap");
+  auto broadcaster = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
 
   // instantiate
   auto ctrl = std::make_shared<BasicAPIRPP>();
+  constexpr char costmap_frame[] = "odom";
+  costmap->set_parameters({rclcpp::Parameter("global_frame", costmap_frame)});
+
   costmap->on_configure(rclcpp_lifecycle::State());
   ctrl->configure(node, name, tf, costmap);
   ctrl->activate();
 
   constexpr double spacing = 0.1;
   constexpr double path_length = 2.0;
+  auto transform_time = node->get_clock()->now();
 
   // Set up test path;
   geometry_msgs::msg::PoseStamped start_of_path;
-  start_of_path.header.frame_id = "test_path_frame";
-  start_of_path.header.stamp = node->get_clock()->now();
+  start_of_path.header.frame_id = "map";
+  start_of_path.header.stamp = transform_time;
   start_of_path.pose.position.x = 0.0;
   start_of_path.pose.position.y = 0.0;
   start_of_path.pose.position.z = 0.0;
@@ -673,7 +679,23 @@ TEST(RegulatedPurePursuitTest, extended_collision_check)
 
   ctrl->setPlan(global_plan);
 
-  // collision should be imminent for inscribed_inflated and lethal but not for free space
+  geometry_msgs::msg::TransformStamped transformStamped;
+  transformStamped.header.stamp = transform_time;
+  transformStamped.header.frame_id = "map";  
+  transformStamped.child_frame_id = "odom";    
+  transformStamped.transform.translation.x = 0.0; 
+  transformStamped.transform.translation.y = 0.0;
+  transformStamped.transform.translation.z = 0.0;
+  transformStamped.transform.rotation.x = 0.0;    
+  transformStamped.transform.rotation.y = 0.0;
+  transformStamped.transform.rotation.z = 0.0;
+  transformStamped.transform.rotation.w = 1.0;   
+
+  tf->setTransform(transformStamped, "test", false);
+  tf->setUsingDedicatedThread(true);
+  broadcaster->sendTransform(transformStamped);
+
+  // collision should be imminent for inscribed_inflated lethal for free space
   costmap->getLayeredCostmap()->getCostmap()->setCost(
     5, 0,
     nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
