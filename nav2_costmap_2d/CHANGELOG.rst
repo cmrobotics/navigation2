@@ -2,8 +2,8 @@
 Changelog for package nav2_costmap_2d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.6 (2023-12-04)
+------------------
 * Initial changelog
   Co-authored-by: Aaron Chong <aaronchongth@gmail.com>
   Co-authored-by: Abdullah Enes BEDİR <46785079+enesbedir1@users.noreply.github.com>

@@ -2,8 +2,8 @@
 Changelog for package nav2_mppi_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.6 (2023-12-04)
+------------------
 * Initial changelog
   Co-authored-by: Guillaume Doisy <doisyg@users.noreply.github.com>
   Co-authored-by: Guillaume Doisy <guillaume@dexory.com>
