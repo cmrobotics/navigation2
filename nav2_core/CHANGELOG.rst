@@ -1,6 +1,6 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package nav2_planner
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package nav2_core
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
 -----------
@@ -19,11 +19,11 @@ Forthcoming
   Co-authored-by: Erwin Lejeune <erwin.lejeune15@gmail.com>
   Co-authored-by: Hao-Xuan Song <44140526+Cryst4L9527@users.noreply.github.com>
   Co-authored-by: Jackson9 <k9632441@gmail.com>
-  Co-authored-by: James Ward <james@robomo.co>
   Co-authored-by: Joshua Wallace <47819219+jwallace42@users.noreply.github.com>
   Co-authored-by: Lukas Fanta <63977366+fantalukas@users.noreply.github.com>
   Co-authored-by: M. Mostafa Farzan <m2_farzan@yahoo.com>
   Co-authored-by: MartiBolet <43337758+MartiBolet@users.noreply.github.com>
+  Co-authored-by: Matej Vargovcik <vargovcik@robotechvision.com>
   Co-authored-by: Nicolas Rocha Pacheco <n.nicolas98@hotmail.com>
   Co-authored-by: Nikolas Engelhard <nikolas.engelhard@gmail.com>
   Co-authored-by: Owen Hooper <17ofh@queensu.ca>
@@ -40,13 +40,14 @@ Forthcoming
   Co-authored-by: Tobias Fischer <info@tobiasfischer.info>
   Co-authored-by: Vinny Ruia <vinny.ruia@fireflyautomatix.com>
   Co-authored-by: Zhenpeng Ge <zhenpeng.ge@qq.com>
+  Co-authored-by: afrixs <matej.vargovcik@gmail.com>
   Co-authored-by: hodnajit <jitkahodna67@gmail.com>
   Co-authored-by: jaeminSHIN <91681721+woawo1213@users.noreply.github.com>
   Co-authored-by: kevin <kevin@floatic.io>
   Co-authored-by: nakai-omer <108797279+nakai-omer@users.noreply.github.com>
   Co-authored-by: shoufei <907575489@qq.com>
   Co-authored-by: 정찬희 <60467877+ladianchad@users.noreply.github.com>
-* Contributors: Adrian Brzozowski, Carl Delsey, Carlos A. Orduno, Daisuke Sato, G.Doisy, Joshua Wallace, Kevin DeMarco, M. Hofstätter, Matt Hansen, Sarathkrishnan Ramesh, Sarthak Mittal, Sean Yen, Shivang Patel, Steve Macenski, Steven Macenski, Zhenpeng Ge, bpwilcox, gezp, stevemacenski
+* Contributors: Alexey Merzlyakov, Fetullah Atas, Harshal Deshpande, Joshua Wallace, RoboTech Vision, Sarthak Mittal, Shivang Patel, Siddarth Gore, Steve Macenski, Steven Macenski, Yathartha Tuladhar, stevemacenski
 
 0.2.0 (2019-06-28)
 ------------------

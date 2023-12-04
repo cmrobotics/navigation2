@@ -1,6 +1,6 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package nav2_planner
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package nav2_system_tests
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
 -----------
@@ -12,18 +12,25 @@ Forthcoming
   Co-authored-by: Afif Swaidan <afif.swaidan@spexal.com>
   Co-authored-by: Alexey Merzlyakov <60094858+AlexeyMerzlyakov@users.noreply.github.com>
   Co-authored-by: Alexey Merzlyakov <alexey.merzlyakov@samsung.com>
+  Co-authored-by: Andrii Maistruk <71632363+andriimaistruk@users.noreply.github.com>
   Co-authored-by: Arshad Mehmood <arshad.mehmood@intel.com>
   Co-authored-by: Austin Greisman <92941098+austin-InDro@users.noreply.github.com>
   Co-authored-by: Borong Yuan <yuanborong@hotmail.com>
+  Co-authored-by: Carl Delsey <carl.r.delsey@intel.com>
   Co-authored-by: Daisuke Sato <43101027+daisukes@users.noreply.github.com>
+  Co-authored-by: DylanDeCoeyer-Quimesis <102609575+DylanDeCoeyer-Quimesis@users.noreply.github.com>
   Co-authored-by: Erwin Lejeune <erwin.lejeune15@gmail.com>
+  Co-authored-by: Fetullah Atas  <fetulahatas1@gmail.com>
   Co-authored-by: Hao-Xuan Song <44140526+Cryst4L9527@users.noreply.github.com>
+  Co-authored-by: HovorunB <87417416+HovorunB@users.noreply.github.com>
   Co-authored-by: Jackson9 <k9632441@gmail.com>
-  Co-authored-by: James Ward <james@robomo.co>
+  Co-authored-by: James Ward <james.ward@appliedev.com>
   Co-authored-by: Joshua Wallace <47819219+jwallace42@users.noreply.github.com>
   Co-authored-by: Lukas Fanta <63977366+fantalukas@users.noreply.github.com>
   Co-authored-by: M. Mostafa Farzan <m2_farzan@yahoo.com>
+  Co-authored-by: Marc Alban <marcalban@gmail.com>
   Co-authored-by: MartiBolet <43337758+MartiBolet@users.noreply.github.com>
+  Co-authored-by: Matej Vargovcik <vargovcik@robotechvision.com>
   Co-authored-by: Nicolas Rocha Pacheco <n.nicolas98@hotmail.com>
   Co-authored-by: Nikolas Engelhard <nikolas.engelhard@gmail.com>
   Co-authored-by: Owen Hooper <17ofh@queensu.ca>
@@ -31,6 +38,8 @@ Forthcoming
   Co-authored-by: Pradheep Krishna <padhupradheep@gmail.com>
   Co-authored-by: Ruffin <roxfoxpox@gmail.com>
   Co-authored-by: Samuel Lindgren <samuel@dynorobotics.se>
+  Co-authored-by: Sarthak Mittal <sarthakmittal2608@gmail.com>
+  Co-authored-by: Shrijit Singh <shrijitsingh99@gmail.com>
   Co-authored-by: Srijanee Biswas <srijanee.biswas@toyotatmh.com>
   Co-authored-by: SrijaneeBiswas <30804865+SrijaneeBiswas@users.noreply.github.com>
   Co-authored-by: Steve Macenski <stevenmacenski@gmail.com>
@@ -40,31 +49,44 @@ Forthcoming
   Co-authored-by: Tobias Fischer <info@tobiasfischer.info>
   Co-authored-by: Vinny Ruia <vinny.ruia@fireflyautomatix.com>
   Co-authored-by: Zhenpeng Ge <zhenpeng.ge@qq.com>
+  Co-authored-by: afrixs <matej.vargovcik@gmail.com>
+  Co-authored-by: blanker <you@example.com>
   Co-authored-by: hodnajit <jitkahodna67@gmail.com>
   Co-authored-by: jaeminSHIN <91681721+woawo1213@users.noreply.github.com>
+  Co-authored-by: jediofgever <fetulahatas1@gmail.com>
   Co-authored-by: kevin <kevin@floatic.io>
+  Co-authored-by: milidam <milidam@users.noreply.github.com>
+  Co-authored-by: muttistefano <mutti.stefano.jp@gmail.com>
   Co-authored-by: nakai-omer <108797279+nakai-omer@users.noreply.github.com>
+  Co-authored-by: relffok <57466265+relffok@users.noreply.github.com>
   Co-authored-by: shoufei <907575489@qq.com>
   Co-authored-by: 정찬희 <60467877+ladianchad@users.noreply.github.com>
-* Contributors: Adrian Brzozowski, Carl Delsey, Carlos A. Orduno, Daisuke Sato, G.Doisy, Joshua Wallace, Kevin DeMarco, M. Hofstätter, Matt Hansen, Sarathkrishnan Ramesh, Sarthak Mittal, Sean Yen, Shivang Patel, Steve Macenski, Steven Macenski, Zhenpeng Ge, bpwilcox, gezp, stevemacenski
+* Contributors: Alejandro Hernández Cordero, Alexey Merzlyakov, Carl Delsey, Carlos A. Orduno, Carlos Orduno, Daisuke Nishimatsu, Fetullah Atas, Florian Gramß, G.Doisy, Hunter L. Allen, Jacob Perron, Joshua Wallace, Kevin DeMarco, Luca Bonamini, Marwan Taher, Matthew Hansen, Melih Erdogan, Michael Jeronimo, Michel Hidalgo, Mikael Arguedas, NithishkumarS, Pablo Iñigo Blasco, Poornima JD, Pradheep Krishna, RoboTech Vision, Ruffin, Sachin Guruswamy, Sarathkrishnan Ramesh, Sarthak Mittal, Sathakkadhullah, Sean Yen, Siddarth Gore, Steve Macenski, Steven Macenski, Tim Clephas, Uladzslau, Vinny Ruia, Yathartha Tuladhar, bpwilcox, chapulina, danieljeswin, gezp, mergify[bot], ruffsl, sathak93, simutisernestas, stevemacenski
 
 0.2.0 (2019-06-28)
 ------------------
+* Contributors: Carl Delsey, Carlos A. Orduno, Matt Hansen, Matthew Hansen, Michael Jeronimo, Mohammad Haghighipanah, Steven Macenski
 
 0.1.5 (2018-12-12)
 ------------------
+* Contributors: Steven Macenski, stevemacenski
 
 0.1.4 (2018-12-11)
 ------------------
+* Contributors: Matt Hansen, Steven Macenski, stevemacenski
 
 0.1.3 (2018-12-10)
 ------------------
+* Contributors: Matt Hansen, Michael Jeronimo, Steven Macenski, stevemacenski
 
 0.1.2 (2018-12-06)
 ------------------
+* Contributors: Carlos A. Orduno, Mohammad Haghighipanah, Steven Macenski, stevemacenski
 
 0.1.1 (2018-12-05)
 ------------------
+* Contributors: Michael Jeronimo, Mohammad Haghighipanah, Steve, Steven Macenski, stevemacenski
 
 0.1.0 (2018-10-30)
 ------------------
+* Contributors: Carlos A. Orduno, Matt Hansen, Michael Jeronimo, Nick Medveditskov

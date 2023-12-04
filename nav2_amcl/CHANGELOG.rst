@@ -1,6 +1,6 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package nav2_planner
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package nav2_amcl
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
 -----------
@@ -12,6 +12,7 @@ Forthcoming
   Co-authored-by: Afif Swaidan <afif.swaidan@spexal.com>
   Co-authored-by: Alexey Merzlyakov <60094858+AlexeyMerzlyakov@users.noreply.github.com>
   Co-authored-by: Alexey Merzlyakov <alexey.merzlyakov@samsung.com>
+  Co-authored-by: Antonio Marangi <antonio.marangi@alba-robot.com>
   Co-authored-by: Arshad Mehmood <arshad.mehmood@intel.com>
   Co-authored-by: Austin Greisman <92941098+austin-InDro@users.noreply.github.com>
   Co-authored-by: Borong Yuan <yuanborong@hotmail.com>
@@ -19,8 +20,8 @@ Forthcoming
   Co-authored-by: Erwin Lejeune <erwin.lejeune15@gmail.com>
   Co-authored-by: Hao-Xuan Song <44140526+Cryst4L9527@users.noreply.github.com>
   Co-authored-by: Jackson9 <k9632441@gmail.com>
-  Co-authored-by: James Ward <james@robomo.co>
   Co-authored-by: Joshua Wallace <47819219+jwallace42@users.noreply.github.com>
+  Co-authored-by: Kai-Tao Xie <kaitaoxie@qq.com>
   Co-authored-by: Lukas Fanta <63977366+fantalukas@users.noreply.github.com>
   Co-authored-by: M. Mostafa Farzan <m2_farzan@yahoo.com>
   Co-authored-by: MartiBolet <43337758+MartiBolet@users.noreply.github.com>
@@ -46,25 +47,32 @@ Forthcoming
   Co-authored-by: nakai-omer <108797279+nakai-omer@users.noreply.github.com>
   Co-authored-by: shoufei <907575489@qq.com>
   Co-authored-by: 정찬희 <60467877+ladianchad@users.noreply.github.com>
-* Contributors: Adrian Brzozowski, Carl Delsey, Carlos A. Orduno, Daisuke Sato, G.Doisy, Joshua Wallace, Kevin DeMarco, M. Hofstätter, Matt Hansen, Sarathkrishnan Ramesh, Sarthak Mittal, Sean Yen, Shivang Patel, Steve Macenski, Steven Macenski, Zhenpeng Ge, bpwilcox, gezp, stevemacenski
+* Contributors: Abhishek Kashyap, Alexey Merzlyakov, Arkadiusz Nowakowski, Artemii Garibov, Carl Delsey, Dan Rose, Denis Štogl, Dmitry Klimenkov, Erwin Lejeune, Ewen BRUN, G.Doisy, Harshal Deshpande, Jacob Perron, Marwan Taher, Michael Equi, Michael Jeronimo, Mohammad Haghighipanah, Poornima JD, Pradheep Krishna, Sarathkrishnan Ramesh, Sarthak Mittal, Sean Yen, Shivang Patel, Steve, Steve Macenski, Steven Macenski, Tanmay, Tobias Ravn, TobiasRavnCMR, Yong-Hao Zou, Zhenpeng Ge, bpwilcox, easylyou, gezp, lantica, mrmara, ruffsl, stevemacenski
 
 0.2.0 (2019-06-28)
 ------------------
+* Contributors: Carl Delsey, Matthew Hansen, Michael Jeronimo, Mohammad Haghighipanah, Scott K Logan, Shane Loretz, bpwilcox
 
 0.1.5 (2018-12-12)
 ------------------
+* Contributors: Steven Macenski, stevemacenski
 
 0.1.4 (2018-12-11)
 ------------------
+* Contributors: Steven Macenski, stevemacenski
 
 0.1.3 (2018-12-10)
 ------------------
+* Contributors: Matt Hansen, Mohammad Haghighipanah, Steven Macenski, stevemacenski
 
 0.1.2 (2018-12-06)
 ------------------
+* Contributors: Carl Delsey, Steven Macenski, stevemacenski
 
 0.1.1 (2018-12-05)
 ------------------
+* Contributors: Brian, Carl Delsey, David V. Lu!!, Matthew Hansen, Michael Jeronimo, Mohammad Haghighipanah, Nick Medveditskov, Steve, Steven Macenski, stevemacenski
 
 0.1.0 (2018-10-30)
 ------------------
+* Contributors: Carl Delsey, Carlos A. Orduno, Matt Hansen, Michael Jeronimo, Mohammad Haghighipanah, Orduno, Carlos A, Steven Macenski, stevemacenski

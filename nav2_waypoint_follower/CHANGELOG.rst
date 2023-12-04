@@ -1,6 +1,6 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package nav2_planner
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package nav2_waypoint_follower
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
 -----------
@@ -15,11 +15,14 @@ Forthcoming
   Co-authored-by: Arshad Mehmood <arshad.mehmood@intel.com>
   Co-authored-by: Austin Greisman <92941098+austin-InDro@users.noreply.github.com>
   Co-authored-by: Borong Yuan <yuanborong@hotmail.com>
+  Co-authored-by: Carl Delsey <carl.r.delsey@intel.com>
   Co-authored-by: Daisuke Sato <43101027+daisukes@users.noreply.github.com>
   Co-authored-by: Erwin Lejeune <erwin.lejeune15@gmail.com>
+  Co-authored-by: Fetullah Atas  <fetulahatas1@gmail.com>
+  Co-authored-by: Guillaume Doisy <doisyg@users.noreply.github.com>
+  Co-authored-by: Guillaume Doisy <guillaume@dexory.com>
   Co-authored-by: Hao-Xuan Song <44140526+Cryst4L9527@users.noreply.github.com>
   Co-authored-by: Jackson9 <k9632441@gmail.com>
-  Co-authored-by: James Ward <james@robomo.co>
   Co-authored-by: Joshua Wallace <47819219+jwallace42@users.noreply.github.com>
   Co-authored-by: Lukas Fanta <63977366+fantalukas@users.noreply.github.com>
   Co-authored-by: M. Mostafa Farzan <m2_farzan@yahoo.com>
@@ -42,11 +45,13 @@ Forthcoming
   Co-authored-by: Zhenpeng Ge <zhenpeng.ge@qq.com>
   Co-authored-by: hodnajit <jitkahodna67@gmail.com>
   Co-authored-by: jaeminSHIN <91681721+woawo1213@users.noreply.github.com>
+  Co-authored-by: jediofgever <fetulahatas1@gmail.com>
   Co-authored-by: kevin <kevin@floatic.io>
   Co-authored-by: nakai-omer <108797279+nakai-omer@users.noreply.github.com>
+  Co-authored-by: ruffsl <roxfoxpox@gmail.com>
   Co-authored-by: shoufei <907575489@qq.com>
   Co-authored-by: 정찬희 <60467877+ladianchad@users.noreply.github.com>
-* Contributors: Adrian Brzozowski, Carl Delsey, Carlos A. Orduno, Daisuke Sato, G.Doisy, Joshua Wallace, Kevin DeMarco, M. Hofstätter, Matt Hansen, Sarathkrishnan Ramesh, Sarthak Mittal, Sean Yen, Shivang Patel, Steve Macenski, Steven Macenski, Zhenpeng Ge, bpwilcox, gezp, stevemacenski
+* Contributors: Adam Aposhian, Carlos A. Orduno, Daisuke Sato, Ewen BRUN, Fetullah Atas, HAIDAR OBEID, Kevin DeMarco, Luca Bonamini, M. Hofstätter, Martijn Buijs, Michel Hidalgo, NithishkumarS, Pradheep Krishna, Ruffin, Sarthak Mittal, Sean Yen, Steve Macenski, Steven Macenski, Tony Najjar, Wilco Bonestroo, Zhenpeng Ge, gezp, stevemacenski
 
 0.2.0 (2019-06-28)
 ------------------

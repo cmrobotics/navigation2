@@ -1,0 +1,76 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package nav2_map_server
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Forthcoming
+-----------
+* Initial changelog
+  Co-authored-by: Aaron Chong <aaronchongth@gmail.com>
+  Co-authored-by: Abdullah Enes BEDİR <46785079+enesbedir1@users.noreply.github.com>
+  Co-authored-by: Adam Aposhian <aposhian.dev@gmail.com>
+  Co-authored-by: Afif Swaidan <53655365+afifswaidan@users.noreply.github.com>
+  Co-authored-by: Afif Swaidan <afif.swaidan@spexal.com>
+  Co-authored-by: Alexey Merzlyakov <60094858+AlexeyMerzlyakov@users.noreply.github.com>
+  Co-authored-by: Alexey Merzlyakov <alexey.merzlyakov@samsung.com>
+  Co-authored-by: Arshad Mehmood <arshad.mehmood@intel.com>
+  Co-authored-by: Austin Greisman <92941098+austin-InDro@users.noreply.github.com>
+  Co-authored-by: Borong Yuan <yuanborong@hotmail.com>
+  Co-authored-by: Daisuke Sato <43101027+daisukes@users.noreply.github.com>
+  Co-authored-by: Erwin Lejeune <erwin.lejeune15@gmail.com>
+  Co-authored-by: Hao-Xuan Song <44140526+Cryst4L9527@users.noreply.github.com>
+  Co-authored-by: Jackson9 <k9632441@gmail.com>
+  Co-authored-by: Joshua Wallace <47819219+jwallace42@users.noreply.github.com>
+  Co-authored-by: Lukas Fanta <63977366+fantalukas@users.noreply.github.com>
+  Co-authored-by: M. Mostafa Farzan <m2_farzan@yahoo.com>
+  Co-authored-by: MartiBolet <43337758+MartiBolet@users.noreply.github.com>
+  Co-authored-by: Nicolas Rocha Pacheco <n.nicolas98@hotmail.com>
+  Co-authored-by: Nikolas Engelhard <nikolas.engelhard@gmail.com>
+  Co-authored-by: Owen Hooper <17ofh@queensu.ca>
+  Co-authored-by: Pedro Alejandro González <71234974+pepisg@users.noreply.github.com>
+  Co-authored-by: Pradheep Krishna <padhupradheep@gmail.com>
+  Co-authored-by: Ruffin <roxfoxpox@gmail.com>
+  Co-authored-by: Samuel Lindgren <samuel@dynorobotics.se>
+  Co-authored-by: Srijanee Biswas <srijanee.biswas@toyotatmh.com>
+  Co-authored-by: SrijaneeBiswas <30804865+SrijaneeBiswas@users.noreply.github.com>
+  Co-authored-by: Steve Macenski <stevenmacenski@gmail.com>
+  Co-authored-by: Stevedan Ogochukwu Omodolor <61468301+stevedanomodolor@users.noreply.github.com>
+  Co-authored-by: Sven Langner <svenlr@users.noreply.github.com>
+  Co-authored-by: Tejas Kumar Shastha <tejas.kumar.shastha@ipa.fraunhofer.de>
+  Co-authored-by: Tobias Fischer <info@tobiasfischer.info>
+  Co-authored-by: Vinny Ruia <vinny.ruia@fireflyautomatix.com>
+  Co-authored-by: Zhenpeng Ge <zhenpeng.ge@qq.com>
+  Co-authored-by: hodnajit <jitkahodna67@gmail.com>
+  Co-authored-by: jaeminSHIN <91681721+woawo1213@users.noreply.github.com>
+  Co-authored-by: kevin <kevin@floatic.io>
+  Co-authored-by: nakai-omer <108797279+nakai-omer@users.noreply.github.com>
+  Co-authored-by: shoufei <907575489@qq.com>
+  Co-authored-by: 정찬희 <60467877+ladianchad@users.noreply.github.com>
+* Contributors: Adam Aposhian, Akash, Alexey Merzlyakov, Carl Delsey, Carlos Andrés Álvarez Restrepo, Dan Rose, Kevin DeMarco, Matthew Hansen, Michael Equi, Michael Jeronimo, Pradheep Krishna, Sarathkrishnan Ramesh, Sarthak Mittal, Sean Yen, Shivang Patel, Steve, Steve Macenski, Steven Macenski, Tim Clephas, Zhenpeng Ge, bpwilcox, gezp, kon, maxlein, simutisernestas, stevemacenski
+
+0.2.0 (2019-06-28)
+------------------
+* Contributors: Alberto Soragna, Carl Delsey, Matt Hansen, Matthew Hansen, Michael Jeronimo, Scott K Logan, bpwilcox
+
+0.1.5 (2018-12-12)
+------------------
+* Contributors: Steven Macenski, stevemacenski
+
+0.1.4 (2018-12-11)
+------------------
+* Contributors: Steven Macenski, stevemacenski
+
+0.1.3 (2018-12-10)
+------------------
+* Contributors: Matt Hansen, Steven Macenski, Steven! Ragnarök, stevemacenski
+
+0.1.2 (2018-12-06)
+------------------
+* Contributors: Carl Delsey, Michael Jeronimo, Steven Macenski, stevemacenski
+
+0.1.1 (2018-12-05)
+------------------
+* Contributors: Michael Jeronimo, Steven Macenski, stevemacenski
+
+0.1.0 (2018-10-30)
+------------------
+* Contributors: Carl Delsey, Matt Hansen, Michael Jeronimo, Orduno, Carlos A, Steven Macenski, bpwilcox

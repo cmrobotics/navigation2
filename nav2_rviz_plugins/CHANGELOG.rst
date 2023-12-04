@@ -1,6 +1,6 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package nav2_planner
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package nav2_rviz_plugins
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
 -----------
@@ -15,11 +15,11 @@ Forthcoming
   Co-authored-by: Arshad Mehmood <arshad.mehmood@intel.com>
   Co-authored-by: Austin Greisman <92941098+austin-InDro@users.noreply.github.com>
   Co-authored-by: Borong Yuan <yuanborong@hotmail.com>
+  Co-authored-by: Carl Delsey <carl.r.delsey@intel.com>
   Co-authored-by: Daisuke Sato <43101027+daisukes@users.noreply.github.com>
   Co-authored-by: Erwin Lejeune <erwin.lejeune15@gmail.com>
   Co-authored-by: Hao-Xuan Song <44140526+Cryst4L9527@users.noreply.github.com>
   Co-authored-by: Jackson9 <k9632441@gmail.com>
-  Co-authored-by: James Ward <james@robomo.co>
   Co-authored-by: Joshua Wallace <47819219+jwallace42@users.noreply.github.com>
   Co-authored-by: Lukas Fanta <63977366+fantalukas@users.noreply.github.com>
   Co-authored-by: M. Mostafa Farzan <m2_farzan@yahoo.com>
@@ -31,6 +31,7 @@ Forthcoming
   Co-authored-by: Pradheep Krishna <padhupradheep@gmail.com>
   Co-authored-by: Ruffin <roxfoxpox@gmail.com>
   Co-authored-by: Samuel Lindgren <samuel@dynorobotics.se>
+  Co-authored-by: Sarthak Mittal <sarthakmittal2608@gmail.com>
   Co-authored-by: Srijanee Biswas <srijanee.biswas@toyotatmh.com>
   Co-authored-by: SrijaneeBiswas <30804865+SrijaneeBiswas@users.noreply.github.com>
   Co-authored-by: Steve Macenski <stevenmacenski@gmail.com>
@@ -46,10 +47,11 @@ Forthcoming
   Co-authored-by: nakai-omer <108797279+nakai-omer@users.noreply.github.com>
   Co-authored-by: shoufei <907575489@qq.com>
   Co-authored-by: 정찬희 <60467877+ladianchad@users.noreply.github.com>
-* Contributors: Adrian Brzozowski, Carl Delsey, Carlos A. Orduno, Daisuke Sato, G.Doisy, Joshua Wallace, Kevin DeMarco, M. Hofstätter, Matt Hansen, Sarathkrishnan Ramesh, Sarthak Mittal, Sean Yen, Shivang Patel, Steve Macenski, Steven Macenski, Zhenpeng Ge, bpwilcox, gezp, stevemacenski
+* Contributors: Aitor Miguel Blanco, Akash, Arkadiusz Nowakowski, Carl Delsey, Chris Lalancette, Dan Rose, Dmitry Klimenkov, Francisco Martín Rico, Hunter L. Allen, Jacob Perron, M. Hofstätter, Matthew Hansen, Melih Erdogan, Michel Hidalgo, NithishkumarS, Ruffin, Sarathkrishnan Ramesh, Sarthak Mittal, Steve Macenski, Steven Macenski, Yathartha Tuladhar, bpwilcox, gezp, mlherd, stevemacenski
 
 0.2.0 (2019-06-28)
 ------------------
+* Contributors: Carl Delsey, Dan Rose, Michael Jeronimo
 
 0.1.5 (2018-12-12)
 ------------------

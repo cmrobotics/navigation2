@@ -1,12 +1,13 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package nav2_planner
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package nav2_regulated_pure_pursuit_controller
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
 -----------
 * Initial changelog
   Co-authored-by: Aaron Chong <aaronchongth@gmail.com>
   Co-authored-by: Abdullah Enes BEDİR <46785079+enesbedir1@users.noreply.github.com>
+  Co-authored-by: Adam Aposhian <adam.aposhian@fireflyautomatix.com>
   Co-authored-by: Adam Aposhian <aposhian.dev@gmail.com>
   Co-authored-by: Afif Swaidan <53655365+afifswaidan@users.noreply.github.com>
   Co-authored-by: Afif Swaidan <afif.swaidan@spexal.com>
@@ -19,11 +20,11 @@ Forthcoming
   Co-authored-by: Erwin Lejeune <erwin.lejeune15@gmail.com>
   Co-authored-by: Hao-Xuan Song <44140526+Cryst4L9527@users.noreply.github.com>
   Co-authored-by: Jackson9 <k9632441@gmail.com>
-  Co-authored-by: James Ward <james@robomo.co>
   Co-authored-by: Joshua Wallace <47819219+jwallace42@users.noreply.github.com>
   Co-authored-by: Lukas Fanta <63977366+fantalukas@users.noreply.github.com>
   Co-authored-by: M. Mostafa Farzan <m2_farzan@yahoo.com>
   Co-authored-by: MartiBolet <43337758+MartiBolet@users.noreply.github.com>
+  Co-authored-by: Narahari Rahul Malayanur <60045406+Naraharirahul@users.noreply.github.com>
   Co-authored-by: Nicolas Rocha Pacheco <n.nicolas98@hotmail.com>
   Co-authored-by: Nikolas Engelhard <nikolas.engelhard@gmail.com>
   Co-authored-by: Owen Hooper <17ofh@queensu.ca>
@@ -31,22 +32,28 @@ Forthcoming
   Co-authored-by: Pradheep Krishna <padhupradheep@gmail.com>
   Co-authored-by: Ruffin <roxfoxpox@gmail.com>
   Co-authored-by: Samuel Lindgren <samuel@dynorobotics.se>
+  Co-authored-by: Shrijit Singh <shrijitsingh99@gmail.com>
   Co-authored-by: Srijanee Biswas <srijanee.biswas@toyotatmh.com>
   Co-authored-by: SrijaneeBiswas <30804865+SrijaneeBiswas@users.noreply.github.com>
   Co-authored-by: Steve Macenski <stevenmacenski@gmail.com>
   Co-authored-by: Stevedan Ogochukwu Omodolor <61468301+stevedanomodolor@users.noreply.github.com>
+  Co-authored-by: Steven Brills <sbrills@aethon.com>
   Co-authored-by: Sven Langner <svenlr@users.noreply.github.com>
   Co-authored-by: Tejas Kumar Shastha <tejas.kumar.shastha@ipa.fraunhofer.de>
   Co-authored-by: Tobias Fischer <info@tobiasfischer.info>
   Co-authored-by: Vinny Ruia <vinny.ruia@fireflyautomatix.com>
   Co-authored-by: Zhenpeng Ge <zhenpeng.ge@qq.com>
+  Co-authored-by: autome <rohit.bhor111.rb@gmail.com>
   Co-authored-by: hodnajit <jitkahodna67@gmail.com>
   Co-authored-by: jaeminSHIN <91681721+woawo1213@users.noreply.github.com>
   Co-authored-by: kevin <kevin@floatic.io>
   Co-authored-by: nakai-omer <108797279+nakai-omer@users.noreply.github.com>
+  Co-authored-by: sathak93 <sathak0730@gmail.com>
+  Co-authored-by: seasony-vp <72447461+seasony-vp@users.noreply.github.com>
   Co-authored-by: shoufei <907575489@qq.com>
+  Co-authored-by: stevenbrills <90438581+stevenbrills@users.noreply.github.com>
   Co-authored-by: 정찬희 <60467877+ladianchad@users.noreply.github.com>
-* Contributors: Adrian Brzozowski, Carl Delsey, Carlos A. Orduno, Daisuke Sato, G.Doisy, Joshua Wallace, Kevin DeMarco, M. Hofstätter, Matt Hansen, Sarathkrishnan Ramesh, Sarthak Mittal, Sean Yen, Shivang Patel, Steve Macenski, Steven Macenski, Zhenpeng Ge, bpwilcox, gezp, stevemacenski
+* Contributors: Adam Aposhian, Afonso da Fonseca Braga, Alexey Merzlyakov, Chris Lalancette, Erwin Lejeune, M. Hofstätter, Nisala Kalupahana, Pradheep Krishna, Sarthak Mittal, Sathakkadhullah, Steve Macenski, Tanmay, Tanmay Deshmukh, dpm-seasony, mergify[bot], relffok, stevemacenski
 
 0.2.0 (2019-06-28)
 ------------------

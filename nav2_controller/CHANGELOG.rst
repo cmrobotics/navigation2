@@ -1,6 +1,6 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package nav2_planner
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package nav2_controller
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
 -----------
@@ -12,17 +12,22 @@ Forthcoming
   Co-authored-by: Afif Swaidan <afif.swaidan@spexal.com>
   Co-authored-by: Alexey Merzlyakov <60094858+AlexeyMerzlyakov@users.noreply.github.com>
   Co-authored-by: Alexey Merzlyakov <alexey.merzlyakov@samsung.com>
+  Co-authored-by: Andrii Maistruk <71632363+andriimaistruk@users.noreply.github.com>
   Co-authored-by: Arshad Mehmood <arshad.mehmood@intel.com>
   Co-authored-by: Austin Greisman <92941098+austin-InDro@users.noreply.github.com>
   Co-authored-by: Borong Yuan <yuanborong@hotmail.com>
+  Co-authored-by: Carl Delsey <1828778+cdelsey@users.noreply.github.com>
   Co-authored-by: Daisuke Sato <43101027+daisukes@users.noreply.github.com>
+  Co-authored-by: Deepak Talwar <deepaktalwardt@farmwise.io>
+  Co-authored-by: DylanDeCoeyer-Quimesis <102609575+DylanDeCoeyer-Quimesis@users.noreply.github.com>
   Co-authored-by: Erwin Lejeune <erwin.lejeune15@gmail.com>
   Co-authored-by: Hao-Xuan Song <44140526+Cryst4L9527@users.noreply.github.com>
+  Co-authored-by: HovorunB <87417416+HovorunB@users.noreply.github.com>
   Co-authored-by: Jackson9 <k9632441@gmail.com>
-  Co-authored-by: James Ward <james@robomo.co>
   Co-authored-by: Joshua Wallace <47819219+jwallace42@users.noreply.github.com>
   Co-authored-by: Lukas Fanta <63977366+fantalukas@users.noreply.github.com>
   Co-authored-by: M. Mostafa Farzan <m2_farzan@yahoo.com>
+  Co-authored-by: Marc Alban <marcalban@gmail.com>
   Co-authored-by: MartiBolet <43337758+MartiBolet@users.noreply.github.com>
   Co-authored-by: Nicolas Rocha Pacheco <n.nicolas98@hotmail.com>
   Co-authored-by: Nikolas Engelhard <nikolas.engelhard@gmail.com>
@@ -40,16 +45,22 @@ Forthcoming
   Co-authored-by: Tobias Fischer <info@tobiasfischer.info>
   Co-authored-by: Vinny Ruia <vinny.ruia@fireflyautomatix.com>
   Co-authored-by: Zhenpeng Ge <zhenpeng.ge@qq.com>
+  Co-authored-by: blanker <you@example.com>
+  Co-authored-by: dkuenster <daniel.kuenster@indurad.com>
   Co-authored-by: hodnajit <jitkahodna67@gmail.com>
   Co-authored-by: jaeminSHIN <91681721+woawo1213@users.noreply.github.com>
   Co-authored-by: kevin <kevin@floatic.io>
+  Co-authored-by: milidam <milidam@users.noreply.github.com>
+  Co-authored-by: muttistefano <mutti.stefano.jp@gmail.com>
   Co-authored-by: nakai-omer <108797279+nakai-omer@users.noreply.github.com>
   Co-authored-by: shoufei <907575489@qq.com>
+  Co-authored-by: stevemacenski <stevenmacenski@gmail.com>
   Co-authored-by: 정찬희 <60467877+ladianchad@users.noreply.github.com>
-* Contributors: Adrian Brzozowski, Carl Delsey, Carlos A. Orduno, Daisuke Sato, G.Doisy, Joshua Wallace, Kevin DeMarco, M. Hofstätter, Matt Hansen, Sarathkrishnan Ramesh, Sarthak Mittal, Sean Yen, Shivang Patel, Steve Macenski, Steven Macenski, Zhenpeng Ge, bpwilcox, gezp, stevemacenski
+* Contributors: Alexey Merzlyakov, Carl Delsey, Carlos A. Orduno, Deepak Talwar, Erik Örjehag, G.Doisy, Harshal Deshpande, M. Hofstätter, Martijn Buijs, Michael Ferguson, Mohammad Haghighipanah, Pablo Iñigo Blasco, Sarathkrishnan Ramesh, Sarthak Mittal, Sean Yen, Shivang Patel, Siddarth Gore, Steve Macenski, Steven Macenski, Yathartha Tuladhar, Zhenpeng Ge, bpwilcox, dkuenster, gezp, harderthan, p-vega, stevemacenski
 
 0.2.0 (2019-06-28)
 ------------------
+* Contributors: Michael Jeronimo
 
 0.1.5 (2018-12-12)
 ------------------
@@ -65,6 +76,8 @@ Forthcoming
 
 0.1.1 (2018-12-05)
 ------------------
+* Contributors: Michael Jeronimo, Steven Macenski
 
 0.1.0 (2018-10-30)
 ------------------
+* Contributors: Carl Delsey, Matt Hansen, Matthew Hansen, Nick Medveditskov, Orduno, Carlos A, Steven Macenski, stevemacenski
