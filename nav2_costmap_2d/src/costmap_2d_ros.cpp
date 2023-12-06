@@ -182,6 +182,11 @@ Costmap2DROS::on_configure(const rclcpp_lifecycle::State & /*state*/)
     rclcpp::SystemDefaultsQoS(),
     std::bind(&Costmap2DROS::setRobotFootprintPolygon, this, std::placeholders::_1));
 
+  update_footprint_service_ = create_service<cmr_msgs::srv::UpdateFootprint>(
+    "update_footprint",
+    std::bind(&Costmap2DROS::updateFootprintCallback, this, std::placeholders::_1,
+    std::placeholders::_2));
+
   footprint_pub_ = create_publisher<geometry_msgs::msg::PolygonStamped>(
     "published_footprint", rclcpp::SystemDefaultsQoS());
 
@@ -287,6 +292,7 @@ Costmap2DROS::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 
   costmap_publisher_.reset();
   clear_costmap_service_.reset();
+  update_footprint_service_.reset();
 
   executor_thread_.reset();
   return nav2_util::CallbackReturn::SUCCESS;
@@ -371,6 +377,7 @@ Costmap2DROS::getParameters()
 void
 Costmap2DROS::setRobotFootprint(const std::vector<geometry_msgs::msg::Point> & points)
 {
+  std::lock_guard<std::mutex> lock(footprint_update_mutex_);
   unpadded_footprint_ = points;
   padded_footprint_ = points;
   padFootprint(padded_footprint_, footprint_padding_);
@@ -382,6 +389,22 @@ Costmap2DROS::setRobotFootprintPolygon(
   const geometry_msgs::msg::Polygon::SharedPtr footprint)
 {
   setRobotFootprint(toPointVector(footprint));
+}
+
+void
+Costmap2DROS::updateFootprintCallback(
+  const cmr_msgs::srv::UpdateFootprint::Request::SharedPtr request,
+  cmr_msgs::srv::UpdateFootprint::Response::SharedPtr response)
+{
+  auto fp = std::make_shared<geometry_msgs::msg::Polygon>();
+  fp->points = request->footprint.points;
+  try {
+    setRobotFootprintPolygon(fp);
+    response->success = true;
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), "Failed to update footprint: %s", e.what());
+    response->success = false;
+  }
 }
 
 void
