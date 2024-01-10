@@ -2,6 +2,17 @@
 Changelog for package nav2_costmap_2d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.7 (2024-01-10)
+------------------
+* Merge pull request `#52 <https://github.com/cmrobotics/navigation2/issues/52>`_ from cmrobotics/humble-pre-release
+  Sync humble-pre-release branch
+* Merge pull request `#49 <https://github.com/cmrobotics/navigation2/issues/49>`_ from cmrobotics/feat/update_footp_service
+  Footprint update service, SS-417
+* add mutex for setRobotFootprint
+* send false if error occured
+* add service to update footprint
+* Contributors: Arkadiusz Nowakowski, Dmitry Klimenkov
+
 1.1.6 (2023-12-04)
 ------------------
 * Initial changelog

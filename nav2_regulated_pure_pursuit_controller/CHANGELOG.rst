@@ -2,6 +2,17 @@
 Changelog for package nav2_regulated_pure_pursuit_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.7 (2024-01-10)
+------------------
+* Merge pull request `#52 <https://github.com/cmrobotics/navigation2/issues/52>`_ from cmrobotics/humble-pre-release
+  Sync humble-pre-release branch
+* Merge pull request `#50 <https://github.com/cmrobotics/navigation2/issues/50>`_ from cmrobotics/ppr_costmap
+  Local costmap in "odom" frame instead of  "map" frame (SS-415 SS-456 BTB-181)
+* Extra extendedcllisioncheck unit tests
+* collision  check unit test with a fake tf.
+* make local costmap glabal frame be odom instead of map
+* Contributors: Arkadiusz Nowakowski, Moumouni BELEM
+
 1.1.6 (2023-12-04)
 ------------------
 * Initial changelog
