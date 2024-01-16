@@ -2,6 +2,9 @@
 Changelog for package nav2_costmap_2d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.8 (2024-01-16)
+------------------
+
 1.1.7 (2024-01-10)
 ------------------
 * Merge pull request `#52 <https://github.com/cmrobotics/navigation2/issues/52>`_ from cmrobotics/humble-pre-release
