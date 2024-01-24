@@ -123,6 +123,12 @@ void RegulatedPurePursuitController::configure(
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".extended_collision_check_path_end_leniency",
     rclcpp::ParameterValue(0.2));
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".rotate_to_heading_min_angular_vel",
+    rclcpp::ParameterValue(0.1));
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".rotate_to_heading_proportional_gain",
+    rclcpp::ParameterValue(10.0));
 
   node->get_parameter(plugin_name_ + ".desired_linear_vel", desired_linear_vel_);
   base_desired_linear_vel_ = desired_linear_vel_;
@@ -188,6 +194,13 @@ void RegulatedPurePursuitController::configure(
   node->get_parameter(
     plugin_name_ + ".extended_collision_check_path_end_leniency",
     extended_collision_check_path_end_leniency_);
+
+  node->get_parameter(
+    plugin_name_ + ".rotate_to_heading_min_angular_vel",
+    rotate_to_heading_min_angular_vel_);
+  node->get_parameter(
+    plugin_name_ + ".rotate_to_heading_proportional_gain",
+    rotate_to_heading_proportional_gain_);
 
   transform_tolerance_ = tf2::durationFromSec(transform_tolerance);
   control_duration_ = 1.0 / control_frequency;
@@ -306,6 +319,7 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
     RCLCPP_WARN(logger_, "Unable to retrieve goal checker's tolerances!");
   } else {
     goal_dist_tol_ = pose_tolerance.position.x;
+    goal_yaw_tol_ = tf2::getYaw(pose_tolerance.orientation);
   }
 
   // Transform path to robot base frame
@@ -409,7 +423,18 @@ void RegulatedPurePursuitController::rotateToHeading(
   // Rotate in place using max angular velocity / acceleration possible
   linear_vel = 0.0;
   const double sign = angle_to_path > 0.0 ? 1.0 : -1.0;
-  angular_vel = sign * rotate_to_heading_angular_vel_;
+
+  double min_allowed_angular_vel = 0.0;
+  if(angle_to_path > goal_yaw_tol_){
+    min_allowed_angular_vel = rotate_to_heading_min_angular_vel_;
+  }
+
+  const double target_angular_vel = std::clamp(
+    std::fabs(angle_to_path) * rotate_to_heading_proportional_gain_, 
+    min_allowed_angular_vel, 
+    rotate_to_heading_angular_vel_
+  );
+  angular_vel = sign * target_angular_vel;
 
   const double & dt = control_duration_;
   const double min_feasible_angular_speed = curr_speed.angular.z - max_angular_accel_ * dt;
