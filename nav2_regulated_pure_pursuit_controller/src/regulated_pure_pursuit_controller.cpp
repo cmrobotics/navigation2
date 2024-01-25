@@ -435,15 +435,11 @@ void RegulatedPurePursuitController::rotateToHeading(
     rotate_to_heading_angular_vel_
   );
   const double & dt = control_duration_;
-  const double min_feasible_angular_speed = std::min(
-    std::fabs(curr_speed.angular.z) - max_angular_accel_ * dt,
-    target_angular_vel
-  );
   const double max_feasible_angular_speed = std::min(
     std::fabs(curr_speed.angular.z) + max_angular_accel_ * dt, 
     rotate_to_heading_angular_vel_
   );
-  angular_vel = std::clamp(target_angular_vel, min_feasible_angular_speed, max_feasible_angular_speed);
+  angular_vel = std::min(target_angular_vel, max_feasible_angular_speed);
   angular_vel = sign * angular_vel;
 }
 
