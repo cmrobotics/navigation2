@@ -222,6 +222,20 @@ void RegulatedPurePursuitController::configure(
     allow_reversing_ = false;
   }
 
+  if (rotate_to_heading_angular_vel_ < rotate_to_heading_min_angular_vel_) {
+    RCLCPP_WARN(
+      logger_, "Rotate to heading angular velocity cannot be lower than minimum. "
+      "Defaulting rotate to heading angular velocity to minimum.");
+    rotate_to_heading_angular_vel_ = rotate_to_heading_min_angular_vel_;
+  }
+
+  if (rotate_to_heading_proportional_gain_ < 0.0) {
+    RCLCPP_WARN(
+      logger_, "Rotate to heading proportional gain cannot be negative. "
+      "Defaulting to 1.0.");
+    rotate_to_heading_proportional_gain_ = 1.0;
+  }
+
   global_path_pub_ = node->create_publisher<nav_msgs::msg::Path>("received_global_plan", 1);
   carrot_pub_ = node->create_publisher<geometry_msgs::msg::PointStamped>("lookahead_point", 1);
   carrot_arc_pub_ = node->create_publisher<nav_msgs::msg::Path>("lookahead_collision_arc", 1);
