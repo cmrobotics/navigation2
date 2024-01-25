@@ -425,7 +425,7 @@ void RegulatedPurePursuitController::rotateToHeading(
   const double sign = angle_to_path > 0.0 ? 1.0 : -1.0;
 
   double min_allowed_angular_vel = 0.0;
-  if(angle_to_path > goal_yaw_tol_){
+  if(std::fabs(angle_to_path) > goal_yaw_tol_){
     min_allowed_angular_vel = rotate_to_heading_min_angular_vel_;
   }
 
