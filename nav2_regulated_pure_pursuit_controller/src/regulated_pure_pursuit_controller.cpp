@@ -123,6 +123,12 @@ void RegulatedPurePursuitController::configure(
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".extended_collision_check_path_end_leniency",
     rclcpp::ParameterValue(0.2));
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".rotate_to_heading_min_angular_vel",
+    rclcpp::ParameterValue(0.1));
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".rotate_to_heading_proportional_gain",
+    rclcpp::ParameterValue(10.0));
 
   node->get_parameter(plugin_name_ + ".desired_linear_vel", desired_linear_vel_);
   base_desired_linear_vel_ = desired_linear_vel_;
@@ -189,6 +195,13 @@ void RegulatedPurePursuitController::configure(
     plugin_name_ + ".extended_collision_check_path_end_leniency",
     extended_collision_check_path_end_leniency_);
 
+  node->get_parameter(
+    plugin_name_ + ".rotate_to_heading_min_angular_vel",
+    rotate_to_heading_min_angular_vel_);
+  node->get_parameter(
+    plugin_name_ + ".rotate_to_heading_proportional_gain",
+    rotate_to_heading_proportional_gain_);
+
   transform_tolerance_ = tf2::durationFromSec(transform_tolerance);
   control_duration_ = 1.0 / control_frequency;
 
@@ -207,6 +220,20 @@ void RegulatedPurePursuitController::configure(
       logger_, "Disabling reversing. Both use_rotate_to_heading and allow_reversing "
       "parameter cannot be set to true. By default setting use_rotate_to_heading true");
     allow_reversing_ = false;
+  }
+
+  if (rotate_to_heading_angular_vel_ < rotate_to_heading_min_angular_vel_) {
+    RCLCPP_WARN(
+      logger_, "Rotate to heading angular velocity cannot be lower than minimum. "
+      "Defaulting rotate to heading angular velocity to minimum.");
+    rotate_to_heading_angular_vel_ = rotate_to_heading_min_angular_vel_;
+  }
+
+  if (rotate_to_heading_proportional_gain_ < 0.0) {
+    RCLCPP_WARN(
+      logger_, "Rotate to heading proportional gain cannot be negative. "
+      "Defaulting to 1.0.");
+    rotate_to_heading_proportional_gain_ = 1.0;
   }
 
   global_path_pub_ = node->create_publisher<nav_msgs::msg::Path>("received_global_plan", 1);
@@ -306,6 +333,7 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
     RCLCPP_WARN(logger_, "Unable to retrieve goal checker's tolerances!");
   } else {
     goal_dist_tol_ = pose_tolerance.position.x;
+    goal_yaw_tol_ = tf2::getYaw(pose_tolerance.orientation);
   }
 
   // Transform path to robot base frame
@@ -409,12 +437,24 @@ void RegulatedPurePursuitController::rotateToHeading(
   // Rotate in place using max angular velocity / acceleration possible
   linear_vel = 0.0;
   const double sign = angle_to_path > 0.0 ? 1.0 : -1.0;
-  angular_vel = sign * rotate_to_heading_angular_vel_;
 
+  double min_allowed_angular_vel = 0.0;
+  if(std::fabs(angle_to_path) > goal_yaw_tol_){
+    min_allowed_angular_vel = rotate_to_heading_min_angular_vel_;
+  }
+
+  const double target_angular_vel = std::clamp(
+    std::fabs(angle_to_path) * rotate_to_heading_proportional_gain_, 
+    min_allowed_angular_vel, 
+    rotate_to_heading_angular_vel_
+  );
   const double & dt = control_duration_;
-  const double min_feasible_angular_speed = curr_speed.angular.z - max_angular_accel_ * dt;
-  const double max_feasible_angular_speed = curr_speed.angular.z + max_angular_accel_ * dt;
-  angular_vel = std::clamp(angular_vel, min_feasible_angular_speed, max_feasible_angular_speed);
+  const double max_feasible_angular_speed = std::min(
+    std::fabs(curr_speed.angular.z) + max_angular_accel_ * dt, 
+    rotate_to_heading_angular_vel_
+  );
+  angular_vel = std::min(target_angular_vel, max_feasible_angular_speed);
+  angular_vel = sign * angular_vel;
 }
 
 geometry_msgs::msg::Point RegulatedPurePursuitController::circleSegmentIntersection(
