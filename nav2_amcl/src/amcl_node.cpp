@@ -2001,6 +2001,57 @@ void AmclNode::healthCheck(){
   }
 }
 
+void AmclNode::integrateOdometricChange(
+  const geometry_msgs::msg::Pose & input_pose,
+  const rclcpp::Time & input_pose_time,
+  geometry_msgs::msg::Pose & transformed_pose_msg)
+{
+  std::string base_frame_id, odom_frame_id;
+  tf2::Duration transform_lookup_timeout;
+  {
+    std::lock_guard<std::recursive_mutex> cfl(mutex_);
+
+    base_frame_id = base_frame_id_;
+    odom_frame_id = odom_frame_id_;
+    transform_lookup_timeout = transform_lookup_timeout_;
+  }
+
+  RCLCPP_INFO(get_logger(), "integrateOdometricChange");
+
+  geometry_msgs::msg::TransformStamped tx_odom;
+  try {
+    rclcpp::Time rclcpp_time = now();
+    tf2::TimePoint tf2_time(std::chrono::nanoseconds(rclcpp_time.nanoseconds()));
+    tf2_time -= tf2::durationFromSec(0.02);
+
+    tf2::TimePoint tf2_time_pose(std::chrono::nanoseconds(input_pose_time.nanoseconds()));
+
+    // Check if the transform is available
+    tx_odom = tf_buffer_->lookupTransform(
+      base_frame_id, tf2_time_pose,
+      base_frame_id, tf2_time, odom_frame_id, tf2::durationFromSec(0.0));
+  } catch (tf2::TransformException & e) {
+    RCLCPP_INFO(get_logger(), "Failed to subtract base to odom transform: (%s)", e.what());
+    tf2::impl::Converter<false, true>::convert(tf2::Transform::getIdentity(), tx_odom.transform);
+  }
+
+  tf2::Transform tx_odom_tf2;
+  tf2::impl::Converter<true, false>::convert(tx_odom.transform, tx_odom_tf2);
+
+  tf2::Transform pose_old;
+  tf2::impl::Converter<true, false>::convert(input_pose, pose_old);
+
+  tf2::Transform pose_new = pose_old * tx_odom_tf2;
+
+  transformed_pose_msg.position.x = pose_new.getOrigin().getX();
+  transformed_pose_msg.position.y = pose_new.getOrigin().getY();
+  transformed_pose_msg.position.z = pose_new.getOrigin().getZ();
+  transformed_pose_msg.orientation.x = pose_new.getRotation().getX();
+  transformed_pose_msg.orientation.y = pose_new.getRotation().getY();
+  transformed_pose_msg.orientation.z = pose_new.getRotation().getZ();
+  transformed_pose_msg.orientation.w = pose_new.getRotation().getW();
+}
+
 }  // namespace nav2_amcl
 
 #include "rclcpp_components/register_node_macro.hpp"
