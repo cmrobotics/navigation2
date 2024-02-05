@@ -347,7 +347,7 @@ int get_inverse(double *cov_matrix, double *result)
   return 0;
 }
 
-int mult_1_3_x_3_3(double *mat_1_3, double *mat_3_3, double *result)
+int mult_1_3_x_3_3(const double *mat_1_3, const double *mat_3_3, double *result)
 {
   double r[3] = { mat_1_3[0] * mat_3_3[0] + mat_1_3[1] * mat_3_3[3] + mat_1_3[2] * mat_3_3[6],
                       mat_1_3[0] * mat_3_3[1] + mat_1_3[1] * mat_3_3[4] + mat_1_3[2] * mat_3_3[7],
@@ -358,7 +358,7 @@ int mult_1_3_x_3_3(double *mat_1_3, double *mat_3_3, double *result)
   return 0;
 }
 
-double mult_1_3_x_3_1(double *mat_1_3, double *mat_3_1)
+double mult_1_3_x_3_1(const double *mat_1_3, const double *mat_3_1)
 {
   double result = mat_1_3[0] * mat_3_1[0] + mat_1_3[1] * mat_3_1[1] + mat_1_3[2] * mat_3_1[2];
   return result;
@@ -375,7 +375,7 @@ double norm_random()
 
 }
 
-int generate_random_particle(double x, double y, double yaw, double *cov_matrix, double *pose_v)
+int generate_random_particle(double x, double y, double yaw, const double *cov_matrix, double *pose_v)
 {
     // See Improved LiDAR Probabilistic Localization for Autonomous Vehicles Using GNSS, #3.4 for details
 

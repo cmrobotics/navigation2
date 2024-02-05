@@ -146,7 +146,8 @@ typedef struct _pf_t
   int converged; 
 
   double ext_x, ext_y, ext_yaw;
-  double cov_matrix[9], eigen_matrix[9];
+  const double* cov_matrix;
+  const double* eigen_matrix;
   double max_particle_gen_prob_ext_pose;
   int ext_pose_is_valid;
 
