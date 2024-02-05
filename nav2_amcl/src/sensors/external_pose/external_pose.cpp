@@ -17,7 +17,7 @@ ExternalPoseBuffer::addMeasurement(const ExternalPoseMeasument measurement)
 }
 
 bool
-ExternalPoseBuffer::findClosestMeasurement(double query_time_sec, ExternalPoseMeasument& out_measurement) const
+ExternalPoseBuffer::findClosestMeasurement(double query_time_sec, std::shared_ptr<ExternalPoseMeasument> out_measurement) const
 {
     double min_abs_diff = std::numeric_limits<double>::max();
     size_t min_diff_idx = 0;
@@ -31,7 +31,7 @@ ExternalPoseBuffer::findClosestMeasurement(double query_time_sec, ExternalPoseMe
     }
 
     if(min_abs_diff < search_tolerance_sec_){
-        out_measurement = buffer_.at(min_diff_idx);
+        out_measurement = std::make_shared<ExternalPoseMeasument>(buffer_.at(min_diff_idx));
         return true;
     } else {
         return false;

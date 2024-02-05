@@ -673,27 +673,23 @@ AmclNode::externalPoseReceived(const geometry_msgs::msg::PoseWithCovarianceStamp
   
   last_ext_pose_received_ts_ = now();
 
-  ExternalPoseMeasument pose;
-  pose.time_sec = rclcpp::Time(msg.header.stamp).seconds();
-
-  double yaw = tf2::getYaw(msg.pose.pose.orientation);
-
-  double cov_matrix[9] = {msg.pose.covariance[0], msg.pose.covariance[1] ,msg.pose.covariance[5] ,msg.pose.covariance[6] ,msg.pose.covariance[7] ,msg.pose.covariance[11] ,msg.pose.covariance[30] ,msg.pose.covariance[31] ,msg.pose.covariance[35] };
-  memcpy(pose.cov_matrix, cov_matrix, 9*sizeof(double));
-
-  auto& clk = *this->get_clock();
-
-  RCLCPP_DEBUG_THROTTLE(get_logger(), clk, 5000, "Received external pose");
-
-  pose.x = msg.pose.pose.position.x;
-  pose.y = msg.pose.pose.position.y;
-  pose.yaw = yaw;
+  const double cov_mat_flat[COV_MAT_SIZE] = {
+    msg.pose.covariance[0],
+    msg.pose.covariance[1],
+    msg.pose.covariance[5],
+    msg.pose.covariance[6],
+    msg.pose.covariance[7],
+    msg.pose.covariance[11],
+    msg.pose.covariance[30],
+    msg.pose.covariance[31],
+    msg.pose.covariance[35]
+  };
 
   Eigen::Matrix3f cov;
   Eigen::Matrix<float, 3, 1> eigenvalues;
-  Eigen::Matrix3f eigenvalues2;
+  Eigen::Matrix3f eigenvalues_diag;
   Eigen::Matrix3f eigen_mat;
-  cov << msg.pose.covariance[0] ,msg.pose.covariance[1] ,msg.pose.covariance[5] ,msg.pose.covariance[6] ,msg.pose.covariance[7] ,msg.pose.covariance[11] ,msg.pose.covariance[30] ,msg.pose.covariance[31] ,msg.pose.covariance[35];
+  cov << cov_mat_flat[0], cov_mat_flat[1], cov_mat_flat[2], cov_mat_flat[3], cov_mat_flat[4], cov_mat_flat[5], cov_mat_flat[6], cov_mat_flat[7], cov_mat_flat[8];
 
   Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> eigensolver(cov);
   
@@ -701,14 +697,25 @@ AmclNode::externalPoseReceived(const geometry_msgs::msg::PoseWithCovarianceStamp
     abort();
 
   eigenvalues = eigensolver.eigenvalues();
+  eigenvalues_diag << eigenvalues(0,0), 0, 0, 0, eigenvalues(1,0), 0, 0, 0, eigenvalues(2,0);
+  eigen_mat = eigenvalues_diag * eigensolver.eigenvectors();
 
-  eigenvalues2 << eigenvalues(0,0), 0, 0, 0, eigenvalues(1,0), 0, 0, 0, eigenvalues(2,0);
+  const double eigen_mat_flat[COV_MAT_SIZE] = {
+    eigen_mat(0,0),
+    eigen_mat(0,1),
+    eigen_mat(0,2),
+    eigen_mat(1,0),
+    eigen_mat(1,1),
+    eigen_mat(1,2),
+    eigen_mat(2,0),
+    eigen_mat(2,1),
+    eigen_mat(2,2)
+  };
 
-  eigen_mat = eigenvalues2 * eigensolver.eigenvectors();
-
-  double temp_mat[9] = {eigen_mat(0,0), eigen_mat(0,1), eigen_mat(0,2), eigen_mat(1,0), eigen_mat(1,1), eigen_mat(1,2), eigen_mat(2,0), eigen_mat(2,1), eigen_mat(2,2)};
-
-  memcpy(pose.eigen_matrix, temp_mat, 9*sizeof(double));
+  ExternalPoseMeasument pose(
+    msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z, 
+    msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w, cov_mat_flat, eigen_mat_flat,
+    rclcpp::Time(msg.header.stamp).seconds());
 
   ext_pose_buffer_->addMeasurement(pose);
 }
@@ -875,16 +882,26 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
         // if external position source is inactive, it considered invalid
         pf_->ext_pose_is_valid = 0;
       } else {
-        ExternalPoseMeasument tmp;
-        if(ext_pose_buffer_->findClosestMeasurement(rclcpp::Time(laser_scan->header.stamp).seconds(), tmp)) {
+        std::shared_ptr<ExternalPoseMeasument> ext_pose;
+        if(ext_pose_buffer_->findClosestMeasurement(rclcpp::Time(laser_scan->header.stamp).seconds(), ext_pose)) {
+          geometry_msgs::msg::Pose start_pose;
+          start_pose.position.x = ext_pose->x;
+          start_pose.position.y = ext_pose->y;
+          start_pose.orientation.x = ext_pose->qx;
+          start_pose.orientation.y = ext_pose->qy;
+          start_pose.orientation.z = ext_pose->qz;
+          start_pose.orientation.w = ext_pose->qw;
+
+          geometry_msgs::msg::Pose updated_pose;
+          integrateOdometricChange(start_pose, rclcpp::Time(ext_pose->time_sec*1e9), updated_pose);
+
           pf_->ext_pose_is_valid = 1;
+          pf_->ext_x = updated_pose.position.x;
+          pf_->ext_y = updated_pose.position.y;
+          pf_->ext_yaw = tf2::getYaw(updated_pose.orientation);
 
-          pf_->ext_x = tmp.x;
-          pf_->ext_y = tmp.y;
-          pf_->ext_yaw = tmp.yaw;
-
-          memcpy(pf_->cov_matrix, tmp.cov_matrix, 9*sizeof(double));
-          memcpy(pf_->eigen_matrix, tmp.eigen_matrix, 9*sizeof(double));
+          memcpy(pf_->cov_matrix, ext_pose->cov_matrix, 9*sizeof(double));
+          memcpy(pf_->eigen_matrix, ext_pose->eigen_matrix, 9*sizeof(double));
         } else {
           pf_->ext_pose_is_valid = 0;
           RCLCPP_WARN(get_logger(), "No close measurement exists");
@@ -1931,7 +1948,7 @@ AmclNode::initLaserScan()
 void
 AmclNode::initExternalPose()
 {
-  last_laser_received_ts_ = rclcpp::Time(0);
+  last_ext_pose_received_ts_ = rclcpp::Time(0);
   ext_pose_check_interval_ = std::chrono::seconds{1};
   ext_pose_active_ = false;
 }

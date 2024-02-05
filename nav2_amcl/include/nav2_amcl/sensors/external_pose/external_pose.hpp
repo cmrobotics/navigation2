@@ -2,19 +2,22 @@
 #define NAV2_AMCL__SENSORS__EXTERNAL_POSE_HPP_
 
 #include <vector>
+#include <memory>
 
 namespace nav2_amcl
 {
 
 struct ExternalPoseMeasument {
-    double x;
-    double y;
-    double yaw;
+    double x, y, z; // position
+    double qx, qy, qz, qw; // orientation
 
-    double cov_matrix[9];
-    double eigen_matrix[9];
+    const double* cov_matrix;
+    const double* eigen_matrix;
 
     double time_sec; // time the measurement was made
+
+    ExternalPoseMeasument(double x, double y, double z, double qx, double qy, double qz, double qw, const double cov_matrix[], const double eigen_matrix[], double time_sec):
+        x(x), y(y), z(z), qx(qx), qy(qy), qz(qz), qw(qw), cov_matrix(cov_matrix), eigen_matrix(eigen_matrix), time_sec(time_sec) {};
 };
 
 class ExternalPoseBuffer {
@@ -37,7 +40,7 @@ void addMeasurement(const ExternalPoseMeasument measurement);
 * @param out_measurement found closest measurement
 * @return True, if closest measurement found, False othervise
 */
-bool findClosestMeasurement(double query_time_sec, ExternalPoseMeasument& out_measurement) const;
+bool findClosestMeasurement(double query_time_sec, std::shared_ptr<ExternalPoseMeasument> out_measurement) const;
 
 private:
 
@@ -47,11 +50,8 @@ const double search_tolerance_sec_;
 const size_t max_buff_size_ = 10;
 std::vector<ExternalPoseMeasument> buffer_ = {};
 
-}; 
-
-
+};
 
 }
-
 
 #endif // NAV2_AMCL__SENSORS__EXTERNAL_POSE_HPP_
