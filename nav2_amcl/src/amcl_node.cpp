@@ -900,8 +900,8 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
           pf_->ext_y = updated_pose.position.y;
           pf_->ext_yaw = tf2::getYaw(updated_pose.orientation);
 
-          pf_->cov_matrix = ext_pose->cov_matrix;
-          pf_->eigen_matrix = ext_pose->eigen_matrix;
+          memcpy(pf_->cov_matrix, ext_pose.cov_matrix, sizeof(double) * COV_MAT_SIZE);
+          memcpy(pf_->eigen_matrix, ext_pose.eigen_matrix, sizeof(double) * COV_MAT_SIZE);
         } else {
           pf_->ext_pose_is_valid = 0;
           RCLCPP_WARN(get_logger(), "No close measurement exists");
