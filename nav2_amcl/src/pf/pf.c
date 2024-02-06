@@ -332,7 +332,7 @@ double get_determinant(double *cov_matrix)
 int get_inverse(double *cov_matrix, double *result)
 {
   double det = get_determinant(cov_matrix);
-  double inv[9] = {   1 * (cov_matrix[4] * cov_matrix[8] - cov_matrix[5] * cov_matrix[7]) / det,
+  double inv[COV_MAT_SIZE] = {   1 * (cov_matrix[4] * cov_matrix[8] - cov_matrix[5] * cov_matrix[7]) / det,
                         -1 * (cov_matrix[3] * cov_matrix[8] - cov_matrix[5] * cov_matrix[6]) / det,
                          1 * (cov_matrix[3] * cov_matrix[7] - cov_matrix[4] * cov_matrix[6]) / det,
                         -1 * (cov_matrix[1] * cov_matrix[8] - cov_matrix[2] * cov_matrix[7]) / det,
@@ -342,7 +342,7 @@ int get_inverse(double *cov_matrix, double *result)
                         -1 * (cov_matrix[0] * cov_matrix[5] - cov_matrix[2] * cov_matrix[3]) / det,
                          1 * (cov_matrix[0] * cov_matrix[4] - cov_matrix[1] * cov_matrix[3]) / det};
 
-  memcpy(result, inv, 9*sizeof(double));
+  memcpy(result, inv, COV_MAT_SIZE*sizeof(double));
 
   return 0;
 }

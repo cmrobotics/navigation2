@@ -877,24 +877,18 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
 
     // Resample the particles
     if (!(++resample_count_ % resample_interval_)) {
-      
-      if(!isExtPoseActive()){
-        // if external position source is inactive, it considered invalid
-        pf_->ext_pose_is_valid = 0;
-      } else {
-        std::shared_ptr<ExternalPoseMeasument> ext_pose;
-        if(ext_pose_buffer_->findClosestMeasurement(rclcpp::Time(laser_scan->header.stamp).seconds(), ext_pose)) {
-          geometry_msgs::msg::Pose start_pose;
-          start_pose.position.x = ext_pose->x;
-          start_pose.position.y = ext_pose->y;
-          start_pose.orientation.x = ext_pose->qx;
-          start_pose.orientation.y = ext_pose->qy;
-          start_pose.orientation.z = ext_pose->qz;
-          start_pose.orientation.w = ext_pose->qw;
+      ExternalPoseMeasument ext_pose;
+      if(isExtPoseActive() && ext_pose_buffer_->findClosestMeasurement(rclcpp::Time(laser_scan->header.stamp).seconds(), ext_pose)) {
+        geometry_msgs::msg::Pose start_pose;
+        start_pose.position.x = ext_pose.x;
+        start_pose.position.y = ext_pose.y;
+        start_pose.orientation.x = ext_pose.qx;
+        start_pose.orientation.y = ext_pose.qy;
+        start_pose.orientation.z = ext_pose.qz;
+        start_pose.orientation.w = ext_pose.qw;
 
-          geometry_msgs::msg::Pose updated_pose;
-          integrateOdometricChange(start_pose, rclcpp::Time(ext_pose->time_sec*1e9), updated_pose);
-
+        geometry_msgs::msg::Pose updated_pose;
+        if(integrateOdometricChange(start_pose, rclcpp::Time(ext_pose.time_sec*1e9), updated_pose)) {
           pf_->ext_pose_is_valid = 1;
           pf_->ext_x = updated_pose.position.x;
           pf_->ext_y = updated_pose.position.y;
@@ -904,8 +898,11 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
           memcpy(pf_->eigen_matrix, ext_pose.eigen_matrix, sizeof(double) * COV_MAT_SIZE);
         } else {
           pf_->ext_pose_is_valid = 0;
-          RCLCPP_WARN(get_logger(), "No close measurement exists");
+          RCLCPP_WARN(get_logger(), "Unable to apply odometric change to external pose");
         }
+      } else {
+        pf_->ext_pose_is_valid = 0;
+        RCLCPP_WARN(get_logger(), "No valid external pose");
       }
 
       // TODO:
@@ -2018,7 +2015,7 @@ void AmclNode::healthCheck(){
   }
 }
 
-void AmclNode::integrateOdometricChange(
+bool AmclNode::integrateOdometricChange(
   const geometry_msgs::msg::Pose & input_pose,
   const rclcpp::Time & input_pose_time,
   geometry_msgs::msg::Pose & transformed_pose_msg)
@@ -2033,9 +2030,6 @@ void AmclNode::integrateOdometricChange(
     transform_lookup_timeout = transform_lookup_timeout_;
   }
 
-  RCLCPP_INFO(get_logger(), "integrateOdometricChange");
-
-  geometry_msgs::msg::TransformStamped tx_odom;
   try {
     rclcpp::Time rclcpp_time = now();
     tf2::TimePoint tf2_time(std::chrono::nanoseconds(rclcpp_time.nanoseconds()));
@@ -2044,29 +2038,32 @@ void AmclNode::integrateOdometricChange(
     tf2::TimePoint tf2_time_pose(std::chrono::nanoseconds(input_pose_time.nanoseconds()));
 
     // Check if the transform is available
-    tx_odom = tf_buffer_->lookupTransform(
+    geometry_msgs::msg::TransformStamped tx_odom = tf_buffer_->lookupTransform(
       base_frame_id, tf2_time_pose,
       base_frame_id, tf2_time, odom_frame_id, tf2::durationFromSec(0.0));
+
+    tf2::Transform tx_odom_tf2;
+    tf2::impl::Converter<true, false>::convert(tx_odom.transform, tx_odom_tf2);
+
+    tf2::Transform pose_old;
+    tf2::impl::Converter<true, false>::convert(input_pose, pose_old);
+
+    tf2::Transform pose_new = pose_old * tx_odom_tf2;
+
+    transformed_pose_msg.position.x = pose_new.getOrigin().getX();
+    transformed_pose_msg.position.y = pose_new.getOrigin().getY();
+    transformed_pose_msg.position.z = pose_new.getOrigin().getZ();
+    transformed_pose_msg.orientation.x = pose_new.getRotation().getX();
+    transformed_pose_msg.orientation.y = pose_new.getRotation().getY();
+    transformed_pose_msg.orientation.z = pose_new.getRotation().getZ();
+    transformed_pose_msg.orientation.w = pose_new.getRotation().getW();
+
+    return true;
   } catch (tf2::TransformException & e) {
     RCLCPP_INFO(get_logger(), "Failed to subtract base to odom transform: (%s)", e.what());
-    tf2::impl::Converter<false, true>::convert(tf2::Transform::getIdentity(), tx_odom.transform);
+
+    return false;
   }
-
-  tf2::Transform tx_odom_tf2;
-  tf2::impl::Converter<true, false>::convert(tx_odom.transform, tx_odom_tf2);
-
-  tf2::Transform pose_old;
-  tf2::impl::Converter<true, false>::convert(input_pose, pose_old);
-
-  tf2::Transform pose_new = pose_old * tx_odom_tf2;
-
-  transformed_pose_msg.position.x = pose_new.getOrigin().getX();
-  transformed_pose_msg.position.y = pose_new.getOrigin().getY();
-  transformed_pose_msg.position.z = pose_new.getOrigin().getZ();
-  transformed_pose_msg.orientation.x = pose_new.getRotation().getX();
-  transformed_pose_msg.orientation.y = pose_new.getRotation().getY();
-  transformed_pose_msg.orientation.z = pose_new.getRotation().getZ();
-  transformed_pose_msg.orientation.w = pose_new.getRotation().getW();
 }
 
 }  // namespace nav2_amcl

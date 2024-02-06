@@ -59,10 +59,6 @@
 
 namespace nav2_amcl
 {
-  // as we are in 2D, we have 3 variables: 2 for position and 1 for orientation
-  // which makes covariance matrix 3x3
-  constexpr uint8_t COV_MAT_SIZE = 9;
-
 /*
  * @class AmclNode
  * @brief ROS wrapper for AMCL
@@ -403,7 +399,7 @@ protected:
   /*
    * @brief Update input pose with odometric change happened since the timestamp of that pose
   */
-  void integrateOdometricChange(
+  bool integrateOdometricChange(
     const geometry_msgs::msg::Pose & input_pose,
     const rclcpp::Time & input_pose_time,
     geometry_msgs::msg::Pose & transformed_pose_msg
