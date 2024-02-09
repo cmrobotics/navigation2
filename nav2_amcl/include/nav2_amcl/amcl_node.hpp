@@ -397,6 +397,14 @@ protected:
    */
   void sendMapToOdomTransform(const tf2::TimePoint & transform_expiration);
   /*
+   * @brief Update input pose with odometric change happened since the timestamp of that pose
+  */
+  bool integrateOdometricChange(
+    const geometry_msgs::msg::Pose & input_pose,
+    const rclcpp::Time & input_pose_time,
+    geometry_msgs::msg::Pose & transformed_pose_msg
+  );
+  /*
    * @brief Handle a new pose estimate callback
    */
   void handleInitialPose(geometry_msgs::msg::PoseWithCovarianceStamped & msg);

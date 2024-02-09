@@ -332,7 +332,7 @@ double get_determinant(double *cov_matrix)
 int get_inverse(double *cov_matrix, double *result)
 {
   double det = get_determinant(cov_matrix);
-  double inv[9] = {   1 * (cov_matrix[4] * cov_matrix[8] - cov_matrix[5] * cov_matrix[7]) / det,
+  double inv[COV_MAT_SIZE] = {   1 * (cov_matrix[4] * cov_matrix[8] - cov_matrix[5] * cov_matrix[7]) / det,
                         -1 * (cov_matrix[3] * cov_matrix[8] - cov_matrix[5] * cov_matrix[6]) / det,
                          1 * (cov_matrix[3] * cov_matrix[7] - cov_matrix[4] * cov_matrix[6]) / det,
                         -1 * (cov_matrix[1] * cov_matrix[8] - cov_matrix[2] * cov_matrix[7]) / det,
@@ -342,12 +342,12 @@ int get_inverse(double *cov_matrix, double *result)
                         -1 * (cov_matrix[0] * cov_matrix[5] - cov_matrix[2] * cov_matrix[3]) / det,
                          1 * (cov_matrix[0] * cov_matrix[4] - cov_matrix[1] * cov_matrix[3]) / det};
 
-  memcpy(result, inv, 9*sizeof(double));
+  memcpy(result, inv, COV_MAT_SIZE*sizeof(double));
 
   return 0;
 }
 
-int mult_1_3_x_3_3(double *mat_1_3, double *mat_3_3, double *result)
+int mult_1_3_x_3_3(const double *mat_1_3, const double *mat_3_3, double *result)
 {
   double r[3] = { mat_1_3[0] * mat_3_3[0] + mat_1_3[1] * mat_3_3[3] + mat_1_3[2] * mat_3_3[6],
                       mat_1_3[0] * mat_3_3[1] + mat_1_3[1] * mat_3_3[4] + mat_1_3[2] * mat_3_3[7],
@@ -358,7 +358,7 @@ int mult_1_3_x_3_3(double *mat_1_3, double *mat_3_3, double *result)
   return 0;
 }
 
-double mult_1_3_x_3_1(double *mat_1_3, double *mat_3_1)
+double mult_1_3_x_3_1(const double *mat_1_3, const double *mat_3_1)
 {
   double result = mat_1_3[0] * mat_3_1[0] + mat_1_3[1] * mat_3_1[1] + mat_1_3[2] * mat_3_1[2];
   return result;
@@ -375,7 +375,7 @@ double norm_random()
 
 }
 
-int generate_random_particle(double x, double y, double yaw, double *cov_matrix, double *pose_v)
+int generate_random_particle(double x, double y, double yaw, const double *cov_matrix, double *pose_v)
 {
     // See Improved LiDAR Probabilistic Localization for Autonomous Vehicles Using GNSS, #3.4 for details
 
