@@ -2,6 +2,20 @@
 Changelog for package nav2_regulated_pure_pursuit_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.9 (2024-02-03)
+------------------
+* Merge pull request `#54 <https://github.com/cmrobotics/navigation2/issues/54>`_ from cmrobotics/proportional-rotate-to-heading
+  SS-713 SS-640 Fix: overshoot of robot heading Proportional rotate to heading
+* feat: default and warn about misparameterization of rotate_to_heading_proportional_gain and rotate_to_heading_angular_vel
+* feat: rpp remove angaular deceleration limit since we have proportional control,
+  reduce coupling with odom based curr_vel as it very noisy and simplify control law
+* fix: rotate to heading not smooth because of noisy "cur_speed"
+  always prefer velocities closer to zero
+* fix: goal yaw tolerence check works in only one direction
+* feat: rpp proportional control for rotate to heading
+  smoothen rotation to heading and prevent overshoot
+* Contributors: Tanmay, Tanmay Deshmukh
+
 1.1.8 (2024-01-16)
 ------------------
 
