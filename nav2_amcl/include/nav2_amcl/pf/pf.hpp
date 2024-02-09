@@ -41,6 +41,10 @@ extern "C" {
 // to give it equal importance with external pose
 #define LASER_TO_EXTERNAL_POSE_BALANCE_FACTOR 250.0
 
+// as we are in 2D, we have 3 variables: 2 for position and 1 for orientation
+// which makes covariance matrix 3x3
+#define COV_MAT_SIZE 9
+
 // Forward declarations
 struct _pf_t;
 struct _rtk_fig_t;
@@ -146,7 +150,8 @@ typedef struct _pf_t
   int converged; 
 
   double ext_x, ext_y, ext_yaw;
-  double cov_matrix[9], eigen_matrix[9];
+  double cov_matrix[COV_MAT_SIZE];
+  double eigen_matrix[COV_MAT_SIZE];
   double max_particle_gen_prob_ext_pose;
   int ext_pose_is_valid;
 
