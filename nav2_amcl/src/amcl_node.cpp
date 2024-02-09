@@ -687,7 +687,6 @@ AmclNode::externalPoseReceived(const geometry_msgs::msg::PoseWithCovarianceStamp
 
   Eigen::Matrix3f cov;
   Eigen::Matrix<float, 3, 1> eigenvalues;
-  Eigen::Matrix3f eigenvalues_diag;
   Eigen::Matrix3f eigen_mat;
   cov << cov_mat_flat[0], cov_mat_flat[1], cov_mat_flat[2], cov_mat_flat[3], cov_mat_flat[4], cov_mat_flat[5], cov_mat_flat[6], cov_mat_flat[7], cov_mat_flat[8];
 
@@ -697,8 +696,7 @@ AmclNode::externalPoseReceived(const geometry_msgs::msg::PoseWithCovarianceStamp
     abort();
 
   eigenvalues = eigensolver.eigenvalues();
-  eigenvalues_diag << eigenvalues(0,0), 0, 0, 0, eigenvalues(1,0), 0, 0, 0, eigenvalues(2,0);
-  eigen_mat = eigenvalues_diag * eigensolver.eigenvectors();
+  eigen_mat = eigenvalues.asDiagonal() * eigensolver.eigenvectors();
 
   const double eigen_mat_flat[COV_MAT_SIZE] = {
     eigen_mat(0,0),
