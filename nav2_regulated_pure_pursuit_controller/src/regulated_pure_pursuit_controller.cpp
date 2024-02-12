@@ -557,7 +557,7 @@ bool RegulatedPurePursuitController::isCollisionImminentExtendedSearch()
     }
   );
   extended_collision_check_path.header.frame_id = costmap_ros_->getGlobalFrameID();
-  extended_collision_check_path.header.stamp = global_plan_.header.stamp ;
+  extended_collision_check_path.header.stamp = clock_->now();
   extended_collision_check_path_pub_->publish(extended_collision_check_path);
 
   unsigned int mx, my;
