@@ -2,6 +2,20 @@
 Changelog for package nav2_amcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.10 (2024-02-14)
+-------------------
+* Merge pull request `#55 <https://github.com/cmrobotics/navigation2/issues/55>`_ from cmrobotics/feat/ext_pose_sync
+  [SS-736] Better external pose timesync
+* refactor: make diagonal matrix with asDiagonal
+* refactor: refactor for better readability
+* fix: move to old way of storing arrays
+* feat: remove copy of cov matrices
+  + verifying const correctness
+* feat: update ExternalPoseMeasurement
+  to support odometric change integration
+* feat: add integrateOdometricChange
+* Contributors: Dmitry Klimenkov
+
 1.1.9 (2024-02-03)
 ------------------
 

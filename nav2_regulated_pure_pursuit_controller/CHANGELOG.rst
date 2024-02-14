@@ -2,6 +2,15 @@
 Changelog for package nav2_regulated_pure_pursuit_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.10 (2024-02-14)
+-------------------
+* Merge pull request `#56 <https://github.com/cmrobotics/navigation2/issues/56>`_ from cmrobotics/ss-697-extrapolation-into-past
+  Ss 697 extrapolation into past + small fix in rviz visualization
+* fix: extended collision check visualization not showing in rviz sometimes
+* fix: extrapolation into past error.
+  lookup transform with current time, not the timestamp that came with global plan
+* Contributors: Tanmay, Tanmay Deshmukh
+
 1.1.9 (2024-02-03)
 ------------------
 * Merge pull request `#54 <https://github.com/cmrobotics/navigation2/issues/54>`_ from cmrobotics/proportional-rotate-to-heading
