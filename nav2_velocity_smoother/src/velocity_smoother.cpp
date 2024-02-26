@@ -272,34 +272,71 @@ void VelocitySmoother::smootherTimer()
   // In case eta reduces another axis out of its own limit, apply accel constraint to guarantee
   // output is within limits, even if it deviates from requested command slightly.
   double eta = 1.0;
+  double acceleration_eta = 1.0;
+  double deceleration_eta = 1.0;
+
+  bool x_accelerates = true;
+  bool y_accelerates = true;
+  bool angular_accelerates = true;
+
   if (scale_velocities_) {
     double curr_eta = -1.0;
 
     curr_eta = findEtaConstraint(
       current_.linear.x, command_->linear.x, max_accels_[0], max_decels_[0]);
-    if (curr_eta > 0.0 && std::fabs(1.0 - curr_eta) > std::fabs(1.0 - eta)) {
-      eta = curr_eta;
+
+    if (curr_eta > 0.0) {
+      if (std::fabs(1.0 - curr_eta) > std::fabs(1.0 - eta)) {
+        eta = curr_eta;
+      }
+      if (curr_eta < acceleration_eta && (command_->linear.x >= current_.linear.x)) {
+        acceleration_eta = eta;
+      } else if (curr_eta < deceleration_eta && (command_->linear.x < current_.linear.x)) {
+        deceleration_eta = eta;
+        x_accelerates = false;
+      }
     }
 
     curr_eta = findEtaConstraint(
       current_.linear.y, command_->linear.y, max_accels_[1], max_decels_[1]);
-    if (curr_eta > 0.0 && std::fabs(1.0 - curr_eta) > std::fabs(1.0 - eta)) {
-      eta = curr_eta;
+    if (curr_eta > 0.0) {
+      if (std::fabs(1.0 - curr_eta) > std::fabs(1.0 - eta)) {
+        eta = curr_eta;
+      }
+
+      if (curr_eta < acceleration_eta && (command_->linear.y >= current_.linear.y)) {
+        acceleration_eta = curr_eta;
+      } else if (curr_eta < deceleration_eta && (command_->linear.y < current_.linear.y)) {
+        deceleration_eta = curr_eta;
+        y_accelerates = false;
+      }
     }
 
     curr_eta = findEtaConstraint(
       current_.angular.z, command_->angular.z, max_accels_[2], max_decels_[2]);
-    if (curr_eta > 0.0 && std::fabs(1.0 - curr_eta) > std::fabs(1.0 - eta)) {
-      eta = curr_eta;
+    if (curr_eta > 0.0) {
+      if (std::fabs(1.0 - curr_eta) > std::fabs(1.0 - eta)) {
+        eta = curr_eta;
+      }
+
+      if (curr_eta < acceleration_eta && (command_->angular.z >= current_.angular.z)) {
+        acceleration_eta = curr_eta;
+      } else if (curr_eta < deceleration_eta && (command_->angular.z < current_.angular.z)) {
+        deceleration_eta = curr_eta;
+        angular_accelerates = false;
+      }
     }
   }
 
   cmd_vel->linear.x = applyConstraints(
-    current_.linear.x, command_->linear.x, max_accels_[0], max_decels_[0], eta);
+    current_.linear.x, command_->linear.x, max_accels_[0], max_decels_[0],
+    x_accelerates ? acceleration_eta : deceleration_eta);
   cmd_vel->linear.y = applyConstraints(
-    current_.linear.y, command_->linear.y, max_accels_[1], max_decels_[1], eta);
+    current_.linear.y, command_->linear.y, max_accels_[1], max_decels_[1],
+    y_accelerates ? acceleration_eta : deceleration_eta);
   cmd_vel->angular.z = applyConstraints(
-    current_.angular.z, command_->angular.z, max_accels_[2], max_decels_[2], eta);
+    current_.angular.z, command_->angular.z, max_accels_[2], max_decels_[2],
+    angular_accelerates ? acceleration_eta : deceleration_eta);
 
   // If open loop, assume we achieved it
   if (open_loop_) {

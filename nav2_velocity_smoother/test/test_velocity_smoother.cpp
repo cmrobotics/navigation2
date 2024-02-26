@@ -106,6 +106,95 @@ TEST(VelocitySmootherTest, openLoopTestTimer)
   }
 }
 
+TEST(VelocitySmootherTest, groupingAccelAndDecelTermsTogether)
+{
+  auto smoother =
+    std::make_shared<VelSmootherShim>();
+
+  const double smoothing_freq = 10.0;
+  const double acceleration = 0.5;
+  const double deceleration = -2.0;
+
+  const std::vector<double> max_vel{1.0, 1.0, 1.0};
+  const std::vector<double> min_vel{-1.0, -1.0, -1.0};
+  const std::vector<double> deadbands{0.0, 0.0, 0.0};
+  const std::vector<double> max_accel{acceleration, acceleration, acceleration};
+  const std::vector<double> max_decel{deceleration, deceleration, deceleration};
+
+  const double accel_diff_between_samples = acceleration / smoothing_freq;
+  const double decel_diff_between_samples = deceleration / smoothing_freq;
+
+  smoother->declare_parameter("scale_velocities", rclcpp::ParameterValue(true));
+  smoother->set_parameter(rclcpp::Parameter("scale_velocities", true));
+
+  smoother->declare_parameter("smoothing_frequency", smoothing_freq);
+  smoother->set_parameter(rclcpp::Parameter("smoothing_frequency", smoothing_freq));
+
+  smoother->declare_parameter("velocity_timeout", 10.0);
+  smoother->set_parameter(rclcpp::Parameter("velocity_timeout", 10.0));
+
+  smoother->declare_parameter("max_accel", max_accel);
+  smoother->set_parameter(rclcpp::Parameter("max_accel", max_accel));
+
+  smoother->declare_parameter("max_decel", max_decel);
+  smoother->set_parameter(rclcpp::Parameter("max_decel", max_decel));
+
+  smoother->declare_parameter("max_velocity", max_vel);
+  smoother->set_parameter(rclcpp::Parameter("max_velocity", max_vel));
+  smoother->declare_parameter("min_velocity", min_vel);
+  smoother->set_parameter(rclcpp::Parameter("min_velocity", min_vel));
+
+  smoother->declare_parameter("deadband_velocity", rclcpp::ParameterValue(deadbands));
+  smoother->set_parameter(rclcpp::Parameter("deadband_velocity", deadbands));
+  rclcpp_lifecycle::State state;
+  smoother->configure(state);
+  smoother->activate(state);
+
+  std::vector<double> linear_vels;
+  std::vector<double> angular_vels;
+  auto subscription = smoother->create_subscription<geometry_msgs::msg::Twist>(
+    "cmd_vel_smoothed",
+    1,
+    [&](geometry_msgs::msg::Twist::SharedPtr msg) {
+      linear_vels.push_back(msg->linear.x);
+      angular_vels.push_back(msg->angular.x);
+    }
+  );
+  auto cmd = std::make_shared<geometry_msgs::msg::Twist>();
+
+  // Accelerate x first
+  cmd->linear.x = 1.0;
+  cmd->angular.z = 0.0;
+  smoother->sendCommandMsg(cmd);
+  auto start = smoother->now();
+  while (smoother->now() - start < 2.5s) {
+    rclcpp::spin_some(smoother->get_node_base_interface());
+  }
+
+  // Decelerate x and accelerate z
+  linear_vels.clear();
+  angular_vels.clear();
+  cmd->linear.x = 0.0;
+  cmd->angular.z = 1.0;
+  smoother->sendCommandMsg(cmd);
+  start = smoother->now();
+  while (smoother->now() - start < 2.5s) {
+    rclcpp::spin_some(smoother->get_node_base_interface());
+  }
+  unsigned int i;
+  for (i = 1; i < linear_vels.size(); i++) {
+    double linear_diff = linear_vels[i] - linear_vels[i - 1];
+    double angular_diff = angular_vels[i] - angular_vels[i - 1];
+    if (std::fabs(linear_diff) > 0.001) {  // not reached target
+      EXPECT_NEAR(linear_diff, decel_diff_between_samples, 0.001);
+    }
+    if (std::fabs(angular_diff) > 0.001) {  // not reached target
+      EXPECT_NEAR(angular_diff, accel_diff_between_samples, 0.001);
+    }
+  }
+  EXPECT_GT(i, 3u);  // should have a few samples before reaching 0 vel
+}
+
 TEST(VelocitySmootherTest, approxClosedLoopTestTimer)
 {
   auto smoother =
