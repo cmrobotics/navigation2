@@ -2,6 +2,9 @@
 Changelog for package nav2_amcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.11 (2024-03-08)
+-------------------
+
 1.1.10 (2024-02-14)
 -------------------
 * Merge pull request `#55 <https://github.com/cmrobotics/navigation2/issues/55>`_ from cmrobotics/feat/ext_pose_sync

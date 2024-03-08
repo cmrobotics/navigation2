@@ -2,6 +2,32 @@
 Changelog for package nav2_velocity_smoother
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.11 (2024-03-08)
+-------------------
+* Merge pull request `#57 <https://github.com/cmrobotics/navigation2/issues/57>`_ from cmrobotics/ss-828-fix-vel-smoother-violating-decel
+  SS-828 Fix Velocity smoother not preserving original path when scaling
+* apply seperate eta for accelerating and decelerating terms to preserve original trajectory
+* Merge pull request `#58 <https://github.com/cmrobotics/navigation2/issues/58>`_ from cmrobotics/asymmetric-accel-from-upstream
+  [velocity_smoother] Fix accel and deccel inverted for negative speeds… cherry picked from upstream
+* [velocity_smoother] Fix accel and deccel inverted for negative speeds (`#3529 <https://github.com/cmrobotics/navigation2/issues/3529>`_)
+  * fix inverted accel / deccel
+  * handle speed through 0.0
+  * add applyConstraints tests
+  * fold logic
+  * same logic in findEtaConstraint
+  * lint
+  * Update nav2_velocity_smoother/src/velocity_smoother.cpp
+  * Update nav2_velocity_smoother/src/velocity_smoother.cpp
+  * findEtaConstraint tests
+  * space
+  * lint
+  * typos
+  * comment typos
+  ---------
+  Co-authored-by: Guillaume Doisy <guillaume@dexory.com>
+  Co-authored-by: Steve Macenski <stevenmacenski@gmail.com>
+* Contributors: Guillaume Doisy, Tanmay, Tanmay Deshmukh
+
 1.1.10 (2024-02-14)
 -------------------
 
