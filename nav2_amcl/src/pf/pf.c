@@ -545,10 +545,10 @@ if(pf->ext_pose_is_valid){
       */
 
       // Naive discrete event sampler
-      double r;
-      r = drand48();
+      double random_number;
+      random_number = drand48();
       for (i = 0; i < set_a->sample_count; i++) {
-        if ((cumulative_probs[i] <= r) && (r < cumulative_probs[i + 1])) {
+        if ((cumulative_probs[i] <= random_number) && (random_number < cumulative_probs[i + 1])) {
           break;
         }
       }
