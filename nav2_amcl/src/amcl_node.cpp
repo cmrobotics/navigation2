@@ -1105,6 +1105,10 @@ AmclNode::getMeanWeightedClustersCentroid(amcl_hyp_t & mean_centroid){
     double weighted_y = 0.0;
     double weighted_yaw = 0.0;
     double weighted_w = 0.0;
+
+    double yaw_total_x_vec = 0.0;
+    double yaw_total_y_vec = 0.0; 
+
     for (int cluster_idx = 0;
       cluster_idx < pf_->sets[pf_->current_set].cluster_count; cluster_idx++)
     {
@@ -1118,10 +1122,13 @@ AmclNode::getMeanWeightedClustersCentroid(amcl_hyp_t & mean_centroid){
 
       weighted_x += pose_mean.v[0] * weight;
       weighted_y += pose_mean.v[1] * weight;
-      weighted_yaw += pose_mean.v[2] * weight;
+
+      yaw_total_x_vec += std::cos(pose_mean.v[2]) * weight;
+      yaw_total_y_vec += std::sin(pose_mean.v[2]) * weight;
 
       weighted_w += weight * weight;
     }
+    weighted_yaw = std::atan2(yaw_total_y_vec, yaw_total_x_vec);
 
     mean_centroid.pf_pose_mean.v[0] = weighted_x;
     mean_centroid.pf_pose_mean.v[1] = weighted_y;
