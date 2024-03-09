@@ -410,7 +410,7 @@ void pf_update_resample(pf_t * pf)
   // double r,c,U;
   // int m;
   // double count_inv;
-  double * c;
+  double * cumulative_probs;
 
   double w_diff;
 
@@ -465,10 +465,10 @@ void pf_update_resample(pf_t * pf)
   // Build up cumulative probability table for resampling.
   // TODO(?): Replace this with a more efficient procedure
   // (e.g., http://www.network-theory.co.uk/docs/gslref/GeneralDiscreteDistributions.html)
-  c = (double *)malloc(sizeof(double) * (set_a->sample_count + 1));
-  c[0] = 0.0;
+  cumulative_probs = (double *)malloc(sizeof(double) * (set_a->sample_count + 1));
+  cumulative_probs[0] = 0.0;
   for (i = 0; i < set_a->sample_count; i++) {
-    c[i + 1] = c[i] + set_a->samples[i].weight;
+    cumulative_probs[i + 1] = cumulative_probs[i] + set_a->samples[i].weight;
   }
 
   // Create the kd tree for adaptive sampling
@@ -548,7 +548,7 @@ if(pf->ext_pose_is_valid){
       double r;
       r = drand48();
       for (i = 0; i < set_a->sample_count; i++) {
-        if ((c[i] <= r) && (r < c[i + 1])) {
+        if ((cumulative_probs[i] <= r) && (r < cumulative_probs[i + 1])) {
           break;
         }
       }
@@ -595,7 +595,7 @@ if(pf->ext_pose_is_valid){
 
   pf_update_converged(pf);
 
-  free(c);
+  free(cumulative_probs);
 }
 
 
