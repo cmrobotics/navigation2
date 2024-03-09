@@ -479,24 +479,22 @@ void pf_update_resample(pf_t * pf)
   set_b->sample_count = 0;
 
 
-w_diff = 0.0;
-if(pf->ext_pose_is_valid){
+  w_diff = 0.0;
+  if(pf->ext_pose_is_valid){
 
-  // See Improved LiDAR Probabilistic Localization for Autonomous Vehicles Using GNSS, #3.4 for details
-  total_dist_prob = total_dist_prob/set_a->sample_count;
-  w_diff = (pf->max_particle_gen_prob_ext_pose * max_particle_likelihood - total_dist_prob) / max_particle_likelihood;
+    // See Improved LiDAR Probabilistic Localization for Autonomous Vehicles Using GNSS, #3.4 for details
+    total_dist_prob = total_dist_prob/set_a->sample_count;
+    w_diff = (pf->max_particle_gen_prob_ext_pose * max_particle_likelihood - total_dist_prob) / max_particle_likelihood;
 
-  if(w_diff < 0.0)
-    w_diff = 0.0;
-  
-} else if (pf->use_augmented_mcl) {
+    if(w_diff < 0.0)
+      w_diff = 0.0;
+    
+  } else if (pf->use_augmented_mcl) {
 
-  w_diff = 1.0 - pf->w_fast / pf->w_slow;
-  if(w_diff < 0.0)
-    w_diff = 0.0;
-}
-
-  
+    w_diff = 1.0 - pf->w_fast / pf->w_slow;
+    if(w_diff < 0.0)
+      w_diff = 0.0;
+  } 
 
   // Can't (easily) combine low-variance sampler with KLD adaptive
   // sampling, so we'll take the more traditional route.
