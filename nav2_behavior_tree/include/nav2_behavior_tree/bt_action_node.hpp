@@ -91,12 +91,17 @@ public:
     // Now that we have the ROS node to use, create the action client for this BT action
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name, callback_group_);
 
-    // Make sure the server is actually there before continuing
-    RCLCPP_DEBUG(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
-    if (!action_client_->wait_for_action_server(1s)) {
-      RCLCPP_ERROR(
-        node_->get_logger(), "\"%s\" action server not available after waiting for 1 s",
-        action_name.c_str());
+    bool wait_for_server;
+    getInput("wait_for_server_on_creation", wait_for_server);
+    if (wait_for_server)
+    {
+      // Make sure the server is actually there before continuing
+      RCLCPP_DEBUG(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
+      if (!action_client_->wait_for_action_server(1s)) {
+        RCLCPP_ERROR(
+          node_->get_logger(), "\"%s\" action server not available after waiting for 1 s",
+          action_name.c_str());
+      }
     }
   }
 
@@ -110,7 +115,9 @@ public:
   {
     BT::PortsList basic = {
       BT::InputPort<std::string>("server_name", "Action server name"),
-      BT::InputPort<std::chrono::milliseconds>("server_timeout")
+      BT::InputPort<std::chrono::milliseconds>("server_timeout"),
+      BT::InputPort<bool>("wait_for_server_on_creation", true, 
+        "Wheather to wait for service to be available during construction of BT")
     };
     basic.insert(addition.begin(), addition.end());
 
