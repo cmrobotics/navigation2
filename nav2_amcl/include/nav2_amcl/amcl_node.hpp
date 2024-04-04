@@ -244,7 +244,7 @@ protected:
     std::shared_ptr<cmr_msgs::srv::GetStatus::Response> response);
 
   // Nomotion update control. Used to temporarily let amcl update samples even when no motion occurs
-  std::atomic<bool> force_update_{false};
+  std::atomic<bool> force_update_{true};
 
   // Odometry
   /*

@@ -864,7 +864,6 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     if (lasers_update_[laser_index]) {
       motion_model_->odometryUpdate(pf_, pose, delta);
     }
-    force_update_ = false;
   }
 
   bool resampled = false;
