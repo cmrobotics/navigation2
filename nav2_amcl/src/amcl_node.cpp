@@ -716,6 +716,7 @@ AmclNode::externalPoseReceived(const geometry_msgs::msg::PoseWithCovarianceStamp
     rclcpp::Time(msg.header.stamp).seconds());
 
   ext_pose_buffer_->addMeasurement(pose);
+  force_update_ = true;
 }
 
 void
@@ -864,6 +865,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     if (lasers_update_[laser_index]) {
       motion_model_->odometryUpdate(pf_, pose, delta);
     }
+    force_update_ = false;
   }
 
   bool resampled = false;
