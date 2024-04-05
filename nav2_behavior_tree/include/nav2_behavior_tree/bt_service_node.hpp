@@ -70,14 +70,19 @@ public:
     // Make a request for the service without parameter
     request_ = std::make_shared<typename ServiceT::Request>();
 
-    // Make sure the server is actually there before continuing
-    RCLCPP_DEBUG(
-      node_->get_logger(), "Waiting for \"%s\" service",
-      service_name_.c_str());
-    if (!service_client_->wait_for_service(1s)) {
-      RCLCPP_ERROR(
-        node_->get_logger(), "\"%s\" service server not available after waiting for 1 s",
-        service_node_name.c_str());
+    bool wait_for_server;
+    getInput("wait_for_server_on_creation", wait_for_server);
+    if (wait_for_server)
+    {
+      // Make sure the server is actually there before continuing
+      RCLCPP_DEBUG(
+        node_->get_logger(), "Waiting for \"%s\" service",
+        service_name_.c_str());
+      if (!service_client_->wait_for_service(1s)) {
+        RCLCPP_ERROR(
+          node_->get_logger(), "\"%s\" service server not available after waiting for 1 s",
+          service_node_name.c_str());
+      }
     }
 
     RCLCPP_DEBUG(
@@ -101,7 +106,9 @@ public:
   {
     BT::PortsList basic = {
       BT::InputPort<std::string>("service_name", "please_set_service_name_in_BT_Node"),
-      BT::InputPort<std::chrono::milliseconds>("server_timeout")
+      BT::InputPort<std::chrono::milliseconds>("server_timeout"),
+      BT::InputPort<bool>("wait_for_server_on_creation", true, 
+        "Wheather to wait for service to be available during construction of BT")
     };
     basic.insert(addition.begin(), addition.end());
 
