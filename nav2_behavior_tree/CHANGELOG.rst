@@ -2,6 +2,13 @@
 Changelog for package nav2_behavior_tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.12 (2024-04-05)
+-------------------
+* Merge pull request `#59 <https://github.com/cmrobotics/navigation2/issues/59>`_ from cmrobotics/feat/optional-wait-for-server-on-create
+  feat: Optionally wait for service and action server in bt node constructor
+* feat: optionally wait for service and action server in bt node constructor
+* Contributors: Tanmay, Tanmay Deshmukh
+
 1.1.11 (2024-03-08)
 -------------------
 

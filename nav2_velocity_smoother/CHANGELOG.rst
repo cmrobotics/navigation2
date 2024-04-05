@@ -2,6 +2,9 @@
 Changelog for package nav2_velocity_smoother
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.12 (2024-04-05)
+-------------------
+
 1.1.11 (2024-03-08)
 -------------------
 * Merge pull request `#57 <https://github.com/cmrobotics/navigation2/issues/57>`_ from cmrobotics/ss-828-fix-vel-smoother-violating-decel
