@@ -716,6 +716,7 @@ AmclNode::externalPoseReceived(const geometry_msgs::msg::PoseWithCovarianceStamp
     rclcpp::Time(msg.header.stamp).seconds());
 
   ext_pose_buffer_->addMeasurement(pose);
+  force_update_ = true;
 }
 
 void
@@ -900,7 +901,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
         }
       } else {
         pf_->ext_pose_is_valid = 0;
-        RCLCPP_WARN(get_logger(), "No valid external pose");
+        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000, "No valid external pose");
       }
 
       // TODO:
