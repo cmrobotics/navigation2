@@ -2,6 +2,15 @@
 Changelog for package nav2_amcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.13 (2024-04-09)
+-------------------
+* Merge pull request `#60 <https://github.com/cmrobotics/navigation2/issues/60>`_ from cmrobotics/force-fiducial-update
+  (SS-459) Force fiducial update
+* feat: force update when seeing a fiducial
+* refactor: make log throttle
+* feat: keep force-update true
+* Contributors: Fulvio Di Luzio, fvlvivs
+
 1.1.12 (2024-04-05)
 -------------------
 
