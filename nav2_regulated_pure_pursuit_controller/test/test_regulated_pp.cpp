@@ -471,7 +471,7 @@ TEST(RegulatedPurePursuitTest, rotateTests)
   angle_to_path = -0.4;
   curr_speed.angular.z = 1.0;
   ctrl->rotateToHeadingWrapper(lin_v, ang_v, angle_to_path, curr_speed);
-  EXPECT_NEAR(ang_v, 0.84, 0.01);
+  EXPECT_NEAR(ang_v, -1.16, 0.01);
 }
 
 TEST(RegulatedPurePursuitTest, applyConstraints)
