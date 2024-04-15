@@ -439,18 +439,18 @@ void RegulatedPurePursuitController::rotateToHeading(
   const double sign = angle_to_path > 0.0 ? 1.0 : -1.0;
 
   double min_allowed_angular_vel = 0.0;
-  if(std::fabs(angle_to_path) > goal_yaw_tol_){
+  if (std::fabs(angle_to_path) > goal_yaw_tol_) {
     min_allowed_angular_vel = rotate_to_heading_min_angular_vel_;
   }
 
   const double target_angular_vel = std::clamp(
-    std::fabs(angle_to_path) * rotate_to_heading_proportional_gain_, 
-    min_allowed_angular_vel, 
+    std::fabs(angle_to_path) * rotate_to_heading_proportional_gain_,
+    min_allowed_angular_vel,
     rotate_to_heading_angular_vel_
   );
   const double & dt = control_duration_;
   const double max_feasible_angular_speed = std::min(
-    std::fabs(curr_speed.angular.z) + max_angular_accel_ * dt, 
+    std::fabs(curr_speed.angular.z) + max_angular_accel_ * dt,
     rotate_to_heading_angular_vel_
   );
   angular_vel = std::min(target_angular_vel, max_feasible_angular_speed);
@@ -534,7 +534,10 @@ bool RegulatedPurePursuitController::isCollisionImminentExtendedSearch()
   nav_msgs::msg::Path extended_collision_check_path;
 
   double remaining_distance = nav2_util::geometry_utils::calculate_path_length(global_plan_);
-  double extended_collision_check_path_length = std::min(max_extended_collision_check_dist_, remaining_distance - extended_collision_check_path_end_leniency_);
+  double extended_collision_check_path_length =
+    std::min(
+    max_extended_collision_check_dist_,
+    remaining_distance - extended_collision_check_path_end_leniency_);
 
   auto last_pose_it =
     nav2_util::geometry_utils::first_after_integrated_distance(
