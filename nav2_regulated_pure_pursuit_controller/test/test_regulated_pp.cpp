@@ -691,7 +691,7 @@ TEST(RegulatedPurePursuitTest, extended_collision_check)
   transformStamped.transform.rotation.z = 0.0;
   transformStamped.transform.rotation.w = 1.0;   
 
-  tf->setTransform(transformStamped, "test", false);
+  tf->setTransform(transformStamped, "test", true);
   tf->setUsingDedicatedThread(true);
   broadcaster->sendTransform(transformStamped);
   
@@ -765,7 +765,7 @@ TEST(RegulatedPurePursuitTest, extended_collision_check_transform_check)
   transformStamped.transform.rotation.z = 0.0;
   transformStamped.transform.rotation.w = 1.0;   
 
-  tf->setTransform(transformStamped, "test", false);
+  tf->setTransform(transformStamped, "test", true);
   tf->setUsingDedicatedThread(true);
   broadcaster_->sendTransform(transformStamped);
 
