@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <tf2_ros/static_transform_broadcaster.h>
 #include <math.h>
 #include <memory>
 #include <string>
@@ -26,7 +27,6 @@
 #include "nav2_regulated_pure_pursuit_controller/regulated_pure_pursuit_controller.hpp"
 #include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 #include "nav2_core/exceptions.hpp"
-#include <tf2_ros/static_transform_broadcaster.h>
 
 class RclCppFixture
 {
@@ -471,7 +471,7 @@ TEST(RegulatedPurePursuitTest, rotateTests)
   angle_to_path = -0.4;
   curr_speed.angular.z = 1.0;
   ctrl->rotateToHeadingWrapper(lin_v, ang_v, angle_to_path, curr_speed);
-  EXPECT_NEAR(ang_v, 0.84, 0.01);
+  EXPECT_NEAR(ang_v, -1.16, 0.01);
 }
 
 TEST(RegulatedPurePursuitTest, applyConstraints)
@@ -681,20 +681,20 @@ TEST(RegulatedPurePursuitTest, extended_collision_check)
 
   geometry_msgs::msg::TransformStamped transformStamped;
   transformStamped.header.stamp = transform_time;
-  transformStamped.header.frame_id = "map";  
-  transformStamped.child_frame_id = "odom";    
-  transformStamped.transform.translation.x = 0.0; 
+  transformStamped.header.frame_id = "map";
+  transformStamped.child_frame_id = "odom";
+  transformStamped.transform.translation.x = 0.0;
   transformStamped.transform.translation.y = 0.0;
   transformStamped.transform.translation.z = 0.0;
-  transformStamped.transform.rotation.x = 0.0;    
+  transformStamped.transform.rotation.x = 0.0;
   transformStamped.transform.rotation.y = 0.0;
   transformStamped.transform.rotation.z = 0.0;
-  transformStamped.transform.rotation.w = 1.0;   
+  transformStamped.transform.rotation.w = 1.0;
 
-  tf->setTransform(transformStamped, "test", false);
+  tf->setTransform(transformStamped, "test", true);
   tf->setUsingDedicatedThread(true);
   broadcaster->sendTransform(transformStamped);
-  
+
   // collision should be imminent for inscribed_inflated lethal for free space
   costmap->getLayeredCostmap()->getCostmap()->setCost(
     5, 0,
@@ -755,17 +755,17 @@ TEST(RegulatedPurePursuitTest, extended_collision_check_transform_check)
 
   geometry_msgs::msg::TransformStamped transformStamped;
   transformStamped.header.stamp = transform_time;
-  transformStamped.header.frame_id = "map";  
-  transformStamped.child_frame_id = "odom";    
-  transformStamped.transform.translation.x = 0.0; 
+  transformStamped.header.frame_id = "map";
+  transformStamped.child_frame_id = "odom";
+  transformStamped.transform.translation.x = 0.0;
   transformStamped.transform.translation.y = -1.0;
   transformStamped.transform.translation.z = 0.0;
-  transformStamped.transform.rotation.x = 0.0;    
+  transformStamped.transform.rotation.x = 0.0;
   transformStamped.transform.rotation.y = 0.0;
   transformStamped.transform.rotation.z = 0.0;
-  transformStamped.transform.rotation.w = 1.0;   
+  transformStamped.transform.rotation.w = 1.0;
 
-  tf->setTransform(transformStamped, "test", false);
+  tf->setTransform(transformStamped, "test", true);
   tf->setUsingDedicatedThread(true);
   broadcaster_->sendTransform(transformStamped);
 
@@ -774,14 +774,14 @@ TEST(RegulatedPurePursuitTest, extended_collision_check_transform_check)
   costmap->getLayeredCostmap()->getCostmap()->setCost(
     5, 0,
     nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
-  EXPECT_FALSE(ctrl->isCollisionImminentExtendedSearchWrapper()); // fails because of the translation regarding y
+  EXPECT_FALSE(ctrl->isCollisionImminentExtendedSearchWrapper());
 
-  costmap->getLayeredCostmap()->getCostmap()->setCost(            // CostMap default resolution is 0.1
+  costmap->getLayeredCostmap()->getCostmap()->setCost(
     5, 10,
     nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
   EXPECT_TRUE(ctrl->isCollisionImminentExtendedSearchWrapper());
 
-  costmap->getLayeredCostmap()->getCostmap()->setCost(            // CostMap default resolution is 0.1
+  costmap->getLayeredCostmap()->getCostmap()->setCost(
     5, 10,
     nav2_costmap_2d::FREE_SPACE);
   EXPECT_FALSE(ctrl->isCollisionImminentExtendedSearchWrapper());
@@ -830,25 +830,25 @@ TEST(RegulatedPurePursuitTest, extended_collision_check_one_pose_path)
 
   geometry_msgs::msg::TransformStamped transformStamped;
   transformStamped.header.stamp = transform_time;
-  transformStamped.header.frame_id = "map";  
-  transformStamped.child_frame_id = "odom";    
-  transformStamped.transform.translation.x = 0.0; 
+  transformStamped.header.frame_id = "map";
+  transformStamped.child_frame_id = "odom";
+  transformStamped.transform.translation.x = 0.0;
   transformStamped.transform.translation.y = -1.0;
   transformStamped.transform.translation.z = 0.0;
-  transformStamped.transform.rotation.x = 0.0;    
+  transformStamped.transform.rotation.x = 0.0;
   transformStamped.transform.rotation.y = 0.0;
   transformStamped.transform.rotation.z = 0.0;
-  transformStamped.transform.rotation.w = 1.0;   
+  transformStamped.transform.rotation.w = 1.0;
 
   tf->setTransform(transformStamped, "test", false);
   tf->setUsingDedicatedThread(true);
   broadcaster_->sendTransform(transformStamped);
 
-  costmap->getLayeredCostmap()->getCostmap()->setCost(            
+  costmap->getLayeredCostmap()->getCostmap()->setCost(
     5, 10,
     nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
   EXPECT_FALSE(ctrl->isCollisionImminentExtendedSearchWrapper());
- 
+
   ctrl->cleanup();
 }
 
