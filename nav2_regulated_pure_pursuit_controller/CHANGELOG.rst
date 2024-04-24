@@ -2,6 +2,15 @@
 Changelog for package nav2_regulated_pure_pursuit_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#61 <https://github.com/cmrobotics/navigation2/issues/61>`_ from cmrobotics/fix-rpp-tests
+  (SS-737) Fix rpp tests
+* refactor: cleaning code for uncrustify
+* fix: negative angle_to_path is evaluated with negative velocity
+* fix: use static transform
+* Contributors: Fulvio Di Luzio, fvlvivs
+
 1.1.13 (2024-04-09)
 -------------------
 

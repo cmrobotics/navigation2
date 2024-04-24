@@ -2,6 +2,9 @@
 Changelog for package nav2_amcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.13 (2024-04-09)
 -------------------
 * Merge pull request `#60 <https://github.com/cmrobotics/navigation2/issues/60>`_ from cmrobotics/force-fiducial-update
