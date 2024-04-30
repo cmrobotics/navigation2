@@ -178,6 +178,11 @@ void VelocitySmoother::inputCommandCallback(const geometry_msgs::msg::Twist::Sha
   last_command_time_ = now();
 }
 
+bool VelocitySmoother::isAccelerating(const double v_curr, const double v_cmd)
+{
+  return abs(v_cmd) >= abs(v_curr) && v_curr * v_cmd >= 0.0;
+}
+
 double VelocitySmoother::findEtaConstraint(
   const double v_curr, const double v_cmd, const double accel, const double decel)
 {
@@ -289,9 +294,11 @@ void VelocitySmoother::smootherTimer()
       if (std::fabs(1.0 - curr_eta) > std::fabs(1.0 - eta)) {
         eta = curr_eta;
       }
-      if (curr_eta < acceleration_eta && (command_->linear.x >= current_.linear.x)) {
+
+      const bool accelerating = isAccelerating(current_.linear.x, command_->linear.x);
+      if (curr_eta < acceleration_eta && accelerating) {
         acceleration_eta = eta;
-      } else if (curr_eta < deceleration_eta && (command_->linear.x < current_.linear.x)) {
+      } else if (curr_eta < deceleration_eta && (!accelerating)) {
         deceleration_eta = eta;
         x_accelerates = false;
       }
@@ -304,9 +311,10 @@ void VelocitySmoother::smootherTimer()
         eta = curr_eta;
       }
 
-      if (curr_eta < acceleration_eta && (command_->linear.y >= current_.linear.y)) {
+      const bool accelerating = isAccelerating(current_.linear.y, command_->linear.y);
+      if (curr_eta < acceleration_eta && accelerating) {
         acceleration_eta = curr_eta;
-      } else if (curr_eta < deceleration_eta && (command_->linear.y < current_.linear.y)) {
+      } else if (curr_eta < deceleration_eta && (!accelerating)) {
         deceleration_eta = curr_eta;
         y_accelerates = false;
       }
@@ -319,9 +327,10 @@ void VelocitySmoother::smootherTimer()
         eta = curr_eta;
       }
 
-      if (curr_eta < acceleration_eta && (command_->angular.z >= current_.angular.z)) {
+      const bool accelerating = isAccelerating(current_.angular.z, command_->angular.z);
+      if (curr_eta < acceleration_eta && accelerating) {
         acceleration_eta = curr_eta;
-      } else if (curr_eta < deceleration_eta && (command_->angular.z < current_.angular.z)) {
+      } else if (curr_eta < deceleration_eta && !accelerating) {
         deceleration_eta = curr_eta;
         angular_accelerates = false;
       }

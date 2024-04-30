@@ -119,6 +119,8 @@ protected:
    */
   void smootherTimer();
 
+  bool isAccelerating(const double v_curr, const double v_cmd);
+
   /**
    * @brief Dynamic reconfigure callback
    * @param parameters Parameter list to change
