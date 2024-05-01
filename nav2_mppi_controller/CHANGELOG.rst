@@ -2,6 +2,9 @@
 Changelog for package nav2_mppi_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.14 (2024-04-24)
 -------------------
 

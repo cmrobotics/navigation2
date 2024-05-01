@@ -2,6 +2,13 @@
 Changelog for package nav2_velocity_smoother
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#62 <https://github.com/cmrobotics/navigation2/issues/62>`_ from cmrobotics/fix-path-preservation
+  fix: seperated eta accelerating decelerating terms didn't work depending on direction
+* fix: seperated eta accelerating decelerating terms
+* Contributors: Tanmay, Tanmay Deshmukh
+
 1.1.14 (2024-04-24)
 -------------------
 

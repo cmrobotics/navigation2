@@ -2,6 +2,9 @@
 Changelog for package nav2_regulated_pure_pursuit_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.14 (2024-04-24)
 -------------------
 * Merge pull request `#61 <https://github.com/cmrobotics/navigation2/issues/61>`_ from cmrobotics/fix-rpp-tests
