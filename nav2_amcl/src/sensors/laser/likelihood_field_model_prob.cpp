@@ -34,7 +34,8 @@ LikelihoodFieldModelProb::LikelihoodFieldModelProb(
   double beam_skip_distance,
   double beam_skip_threshold,
   double beam_skip_error_threshold,
-  size_t max_beams, map_t * map, double importance_factor)
+  size_t max_beams, map_t * map, double importance_factor,
+  const double /*min_laser_hit_sample_dist*/)
 : Laser(max_beams, map)
 {
   z_hit_ = z_hit;

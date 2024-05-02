@@ -29,7 +29,8 @@ namespace nav2_amcl
 
 BeamModel::BeamModel(
   double z_hit, double z_short, double z_max, double z_rand, double sigma_hit,
-  double lambda_short, double chi_outlier, size_t max_beams, map_t * map, double importance_factor)
+  double lambda_short, double chi_outlier, size_t max_beams, map_t * map, double importance_factor,
+  const double /*min_laser_hit_sample_dist*/)
 : Laser(max_beams, map)
 {
   z_hit_ = z_hit;

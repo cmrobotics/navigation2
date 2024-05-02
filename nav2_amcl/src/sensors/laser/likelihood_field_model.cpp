@@ -29,7 +29,8 @@ namespace nav2_amcl
 
 LikelihoodFieldModel::LikelihoodFieldModel(
   double z_hit, double z_rand, double sigma_hit,
-  double max_occ_dist, size_t max_beams, map_t * map, double importance_factor)
+  double max_occ_dist, size_t max_beams, map_t * map, double importance_factor,
+  const double min_laser_hit_sample_dist)
 : Laser(max_beams, map)
 {
   z_hit_ = z_hit;
@@ -37,6 +38,7 @@ LikelihoodFieldModel::LikelihoodFieldModel(
   sigma_hit_ = sigma_hit;
   importance_factor_ = importance_factor;
   map_update_cspace(map, max_occ_dist);
+  min_laser_hit_sample_dist_sq_ = min_laser_hit_sample_dist * min_laser_hit_sample_dist;
 }
 
 double
@@ -77,6 +79,7 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
       step = 1;
     }
 
+    double last_hit_x = 0, last_hit_y = 0;
     for (i = 0; i < data->range_count; i += step) {
       obs_range = data->ranges[i][0];
       obs_bearing = data->ranges[i][1];
@@ -96,6 +99,18 @@ LikelihoodFieldModel::sensorFunction(LaserData * data, pf_sample_set_t * set)
       // Compute the endpoint of the beam
       hit.v[0] = pose.v[0] + obs_range * cos(pose.v[2] + obs_bearing);
       hit.v[1] = pose.v[1] + obs_range * sin(pose.v[2] + obs_bearing);
+
+      if(i > 0)
+      {
+        const double dist_to_last_sample_sq = 
+          (hit.v[0] - last_hit_x) * (hit.v[0] - last_hit_x) +
+          (hit.v[1] - last_hit_y) * (hit.v[1] - last_hit_y);
+
+        if(dist_to_last_sample_sq < self->min_laser_hit_sample_dist_sq_)
+          continue;
+      }
+      last_hit_x = hit.v[0];
+      last_hit_y = hit.v[1];
 
       // Convert to map grid coords.
       int mi, mj;
