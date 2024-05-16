@@ -439,6 +439,7 @@ protected:
   std::string global_frame_id_;
   double lambda_short_;
   double laser_likelihood_max_dist_;
+  double min_laser_hit_sample_dist_;
   double laser_max_range_;
   double laser_min_range_;
   std::string sensor_model_type_;

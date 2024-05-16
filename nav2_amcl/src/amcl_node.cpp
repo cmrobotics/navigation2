@@ -255,6 +255,10 @@ AmclNode::AmclNode(const rclcpp::NodeOptions & options)
     "laser_importance_factor", rclcpp::ParameterValue(1.0f),
     "Importance factor for laser scan, [0.0, 1.0]");
 
+  add_parameter(
+    "min_laser_hit_sample_dist", rclcpp::ParameterValue(0.0f),
+    "Minimum distance between two laser points for the laser mesurement model.");
+
     add_parameter(
       "std_warn_level_x", rclcpp::ParameterValue(0.2),
       "Limit threshold of x value. Monitors the estimated standard deviation of the filter.");
@@ -1295,19 +1299,22 @@ AmclNode::createLaserObject()
   if (sensor_model_type_ == "beam") {
     return new nav2_amcl::BeamModel(
       z_hit_, z_short_, z_max_, z_rand_, sigma_hit_, lambda_short_,
-      0.0, max_beams_, map_, laser_importance_factor_);
+      0.0, max_beams_, map_, laser_importance_factor_,
+      min_laser_hit_sample_dist_);
   }
 
   if (sensor_model_type_ == "likelihood_field_prob") {
     return new nav2_amcl::LikelihoodFieldModelProb(
       z_hit_, z_rand_, sigma_hit_,
       laser_likelihood_max_dist_, do_beamskip_, beam_skip_distance_, beam_skip_threshold_,
-      beam_skip_error_threshold_, max_beams_, map_, laser_importance_factor_);
+      beam_skip_error_threshold_, max_beams_, map_, laser_importance_factor_,
+      min_laser_hit_sample_dist_);
   }
 
   return new nav2_amcl::LikelihoodFieldModel(
     z_hit_, z_rand_, sigma_hit_,
-    laser_likelihood_max_dist_, max_beams_, map_, laser_importance_factor_);
+    laser_likelihood_max_dist_, max_beams_, map_, laser_importance_factor_,
+    min_laser_hit_sample_dist_);
 }
 
 void
@@ -1368,6 +1375,7 @@ AmclNode::initParameters()
   get_parameter("scan_topic", scan_topic_);
   get_parameter("map_topic", map_topic_);
   get_parameter("laser_importance_factor", laser_importance_factor_);
+  get_parameter("min_laser_hit_sample_dist", min_laser_hit_sample_dist_);
   get_parameter("std_warn_level_x", std_warn_level_x_);
   get_parameter("std_warn_level_y", std_warn_level_y_);
   get_parameter("std_warn_level_yaw", std_warn_level_yaw_);
@@ -1523,6 +1531,9 @@ AmclNode::dynamicParametersCallback(
         reinit_laser = true;
       } else if (param_name == "laser_likelihood_max_dist") {
         laser_likelihood_max_dist_ = parameter.as_double();
+        reinit_laser = true;
+      } else if (param_name == "min_laser_hit_sample_dist") {
+        min_laser_hit_sample_dist_ = parameter.as_double();
         reinit_laser = true;
       } else if (param_name == "laser_max_range") {
         laser_max_range_ = parameter.as_double();
