@@ -2,6 +2,13 @@
 Changelog for package nav2_amcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#63 <https://github.com/cmrobotics/navigation2/issues/63>`_ from cmrobotics/feat/spread-laser-sample
+  Feat/spread laser samples
+* feat: min laser point distance for measurement model. Feat disabled by default
+* Contributors: Tanmay Deshmukh
+
 1.1.15 (2024-05-01)
 -------------------
 
