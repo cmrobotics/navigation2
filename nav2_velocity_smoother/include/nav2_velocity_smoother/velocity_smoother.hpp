@@ -25,6 +25,7 @@
 #include "nav2_util/lifecycle_node.hpp"
 #include "nav2_util/node_utils.hpp"
 #include "nav2_util/odometry_utils.hpp"
+#include "cmr_msgs/msg/fiducial_pose_array_stamped.hpp"
 
 namespace nav2_velocity_smoother
 {
@@ -119,6 +120,8 @@ protected:
    */
   void smootherTimer();
 
+  void fiducial_seen_callback_(const cmr_msgs::msg::FiducialPoseArrayStamped::SharedPtr fiducial_seen_list);
+
   bool isAccelerating(const double v_curr, const double v_cmd);
 
   /**
@@ -133,6 +136,9 @@ protected:
   rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr
     smoothed_cmd_pub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_sub_;
+
+  rclcpp::Subscription<cmr_msgs::msg::FiducialPoseArrayStamped>::SharedPtr fiducial_seen_subscription_;
+
   rclcpp::TimerBase::SharedPtr timer_;
 
   rclcpp::Clock::SharedPtr clock_;
@@ -147,6 +153,7 @@ protected:
   bool stopped_{true};
   bool scale_velocities_;
   std::vector<double> max_velocities_;
+  std::vector<double> max_velocities_near_fiducial_;
   std::vector<double> min_velocities_;
   std::vector<double> max_accels_;
   std::vector<double> max_decels_;
@@ -154,7 +161,10 @@ protected:
   rclcpp::Duration velocity_timeout_{0, 0};
   rclcpp::Time last_command_time_;
 
+  builtin_interfaces::msg::Time last_fiducial_seen_;
+
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
+  
 };
 
 }  // namespace nav2_velocity_smoother

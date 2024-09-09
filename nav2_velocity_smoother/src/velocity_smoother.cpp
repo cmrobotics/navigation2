@@ -64,12 +64,15 @@ VelocitySmoother::on_configure(const rclcpp_lifecycle::State &)
   declare_parameter_if_not_declared(
     node, "max_velocity", rclcpp::ParameterValue(std::vector<double>{0.50, 0.0, 2.5}));
   declare_parameter_if_not_declared(
+    node, "max_velocity_near_fiducial", rclcpp::ParameterValue(std::vector<double>{0.25, 0.0, 0.1}));
+  declare_parameter_if_not_declared(
     node, "min_velocity", rclcpp::ParameterValue(std::vector<double>{-0.50, 0.0, -2.5}));
   declare_parameter_if_not_declared(
     node, "max_accel", rclcpp::ParameterValue(std::vector<double>{2.5, 0.0, 3.2}));
   declare_parameter_if_not_declared(
     node, "max_decel", rclcpp::ParameterValue(std::vector<double>{-2.5, 0.0, -3.2}));
   node->get_parameter("max_velocity", max_velocities_);
+  node->get_parameter("max_velocity_near_fiducial", max_velocities_near_fiducial_);
   node->get_parameter("min_velocity", min_velocities_);
   node->get_parameter("max_accel", max_accels_);
   node->get_parameter("max_decel", max_decels_);
@@ -112,11 +115,17 @@ VelocitySmoother::on_configure(const rclcpp_lifecycle::State &)
     throw std::runtime_error("Invalid feedback_type, options are OPEN_LOOP and CLOSED_LOOP.");
   }
 
+  last_fiducial_seen_ = get_clock()->now();
+
   // Setup inputs / outputs
   smoothed_cmd_pub_ = create_publisher<geometry_msgs::msg::Twist>("cmd_vel_smoothed", 1);
   cmd_sub_ = create_subscription<geometry_msgs::msg::Twist>(
     "cmd_vel", rclcpp::QoS(1),
     std::bind(&VelocitySmoother::inputCommandCallback, this, std::placeholders::_1));
+
+  fiducial_seen_subscription_ = node->create_subscription<cmr_msgs::msg::FiducialPoseArrayStamped>(
+      "fiducial/poses", rclcpp::SystemDefaultsQoS(),
+      std::bind(&VelocitySmoother::fiducial_seen_callback_, this, std::placeholders::_1));
 
   return nav2_util::CallbackReturn::SUCCESS;
 }
@@ -170,6 +179,11 @@ VelocitySmoother::on_shutdown(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "Shutting down");
   return nav2_util::CallbackReturn::SUCCESS;
+}
+
+void VelocitySmoother::fiducial_seen_callback_(const cmr_msgs::msg::FiducialPoseArrayStamped::SharedPtr fiducial_seen_list)
+{
+  last_fiducial_seen_ = fiducial_seen_list->header.stamp;
 }
 
 void VelocitySmoother::inputCommandCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
@@ -267,9 +281,16 @@ void VelocitySmoother::smootherTimer()
   }
 
   // Apply absolute velocity restrictions to the command
-  command_->linear.x = std::clamp(command_->linear.x, min_velocities_[0], max_velocities_[0]);
-  command_->linear.y = std::clamp(command_->linear.y, min_velocities_[1], max_velocities_[1]);
-  command_->angular.z = std::clamp(command_->angular.z, min_velocities_[2], max_velocities_[2]);
+
+  auto max_vels = max_velocities_;
+  if(this->get_clock()->now() < rclcpp::Time(last_fiducial_seen_) + rclcpp::Duration::from_seconds(3.0))
+  {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Limiting max vel near fiducial..");
+    max_vels = max_velocities_near_fiducial_;
+  }
+  command_->linear.x = std::clamp(command_->linear.x, min_velocities_[0], max_vels[0]);
+  command_->linear.y = std::clamp(command_->linear.y, min_velocities_[1], max_vels[1]);
+  command_->angular.z = std::clamp(command_->angular.z, min_velocities_[2], max_vels[2]);
 
   // Find if any component is not within the acceleration constraints. If so, store the most
   // significant scale factor to apply to the vector <dvx, dvy, dvw>, eta, to reduce all axes
@@ -399,6 +420,9 @@ VelocitySmoother::dynamicParametersCallback(std::vector<rclcpp::Parameter> param
 
       if (name == "max_velocity") {
         max_velocities_ = parameter.as_double_array();
+      }
+      else if (name == "max_velocity_near_fiducial") {
+        max_velocities_near_fiducial_ = parameter.as_double_array();
       } else if (name == "min_velocity") {
         min_velocities_ = parameter.as_double_array();
       } else if (name == "max_accel") {
