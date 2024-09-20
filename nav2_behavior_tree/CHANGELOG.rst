@@ -2,6 +2,14 @@
 Changelog for package nav2_behavior_tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#64 <https://github.com/cmrobotics/navigation2/issues/64>`_ from cmrobotics/fix-bt-construct-crash
+  Fix behaviour tree construction fails
+* fix: bt construction fails if cancel action unavailable
+  dont throw an exception if a cancel action doesn't YET exist. It may not exist during launch
+* Contributors: Tanmay, Tanmay Deshmukh
+
 1.1.16 (2024-06-04)
 -------------------
 

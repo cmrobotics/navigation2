@@ -2,6 +2,9 @@
 Changelog for package nav2_amcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.16 (2024-06-04)
 -------------------
 * Merge pull request `#63 <https://github.com/cmrobotics/navigation2/issues/63>`_ from cmrobotics/feat/spread-laser-sample

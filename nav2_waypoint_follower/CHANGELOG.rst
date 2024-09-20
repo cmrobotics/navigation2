@@ -2,6 +2,9 @@
 Changelog for package nav2_waypoint_follower
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.16 (2024-06-04)
 -------------------
 

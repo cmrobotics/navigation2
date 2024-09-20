@@ -2,6 +2,9 @@
 Changelog for package nav2_theta_star_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.16 (2024-06-04)
 -------------------
 
