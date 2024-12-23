@@ -71,6 +71,7 @@ def generate_launch_description():
             executable='lifecycle_manager',
             name='lifecycle_manager',
             output='screen',
+            respawn=True,
             emulate_tty=True,  # https://github.com/ros2/launch/issues/188
             parameters=[{'use_sim_time': use_sim_time},
                         {'autostart': autostart},
@@ -80,6 +81,7 @@ def generate_launch_description():
             package='nav2_collision_monitor',
             executable='collision_monitor',
             output='screen',
+            respawn=True,
             emulate_tty=True,  # https://github.com/ros2/launch/issues/188
             parameters=[configured_params])
 
