@@ -2,8 +2,8 @@
 Changelog for package nav2_collision_monitor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.18 (2025-01-23)
+-------------------
 * Merge pull request `#65 <https://github.com/cmrobotics/navigation2/issues/65>`_ from cmrobotics/enable-respawn-collision-monitor
   Enable respawn for collision monitor
 * feat: enable respawn for collision monitor
