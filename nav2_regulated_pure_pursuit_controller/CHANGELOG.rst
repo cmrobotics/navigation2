@@ -2,6 +2,9 @@
 Changelog for package nav2_regulated_pure_pursuit_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.17 (2024-09-20)
 -------------------
 
