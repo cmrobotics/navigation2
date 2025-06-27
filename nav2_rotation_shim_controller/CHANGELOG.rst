@@ -2,6 +2,9 @@
 Changelog for package nav2_rotation_shim_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.18 (2025-01-23)
 -------------------
 

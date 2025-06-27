@@ -2,6 +2,17 @@
 Changelog for package nav2_amcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#66 <https://github.com/cmrobotics/navigation2/issues/66>`_ from cmrobotics/fix-rviz-localize-robot-keeps-spinning
+  SS-814 Revert "add intial_pose_is_ready flag" - Fix: robot localized with rviz, but keeps doing initialization behaviour
+* Revert "add intial_pose_is_ready flag"
+  This reverts commit 6d97e0e8ff87ae5d56dab61246cccf9de3bde19a.
+  If an initial pose is recieved before activate, it is cached and used later when amcl is activated. This introduces a bug where initial_pose_is_ready\_ never gets set to True.
+  initial_pose_is_ready\_ should have been set to true in places where the already existing initial_pose_is_known\_ is set. (mainly handleInitialPose())
+  initial_pose_is_ready\_ would then become identical to initial_pose_is_known\_, with the only difference being that the new variable is set before handleInitialPose() which delays setting it to true due to a lookuptransform inside - this was supposedly done for a minor time optimization as lookup transform can take 100ms.
+* Contributors: Tanmay, Tanmay Deshmukh
+
 1.1.18 (2025-01-23)
 -------------------
 

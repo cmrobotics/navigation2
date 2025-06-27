@@ -2,6 +2,9 @@
 Changelog for package nav2_lifecycle_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.18 (2025-01-23)
 -------------------
 
