@@ -2,8 +2,8 @@
 Changelog for package nav2_amcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.19 (2025-06-27)
+-------------------
 * Merge pull request `#66 <https://github.com/cmrobotics/navigation2/issues/66>`_ from cmrobotics/fix-rviz-localize-robot-keeps-spinning
   SS-814 Revert "add intial_pose_is_ready flag" - Fix: robot localized with rviz, but keeps doing initialization behaviour
 * Revert "add intial_pose_is_ready flag"
