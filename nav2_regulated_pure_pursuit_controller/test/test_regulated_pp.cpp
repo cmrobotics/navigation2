@@ -715,6 +715,43 @@ TEST(RegulatedPurePursuitTest, extended_collision_check)
   ctrl->cleanup();
 }
 
+
+TEST(RegulatedPurePursuitTest, carrot_point_not_behind)
+{
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testRPPcarrot_point_not_behind");
+  std::string plugin_name = "PathFollower";
+  auto ctrl = std::make_shared<BasicAPIRPP>();
+  auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  auto costmap = std::make_shared<nav2_costmap_2d::Costmap2DROS>("fake_costmap");
+  rclcpp_lifecycle::State state;
+  costmap->on_configure(state);
+  ctrl->configure(node, plugin_name, tf, costmap);
+
+  const double min_lookahead_dist = 0.3;
+  node->set_parameter(
+    rclcpp::Parameter(
+      plugin_name + ".forward_only_carrot",
+      rclcpp::ParameterValue(true)));
+  node->set_parameter(
+    rclcpp::Parameter(
+      plugin_name + ".min_lookahead_dist",
+      rclcpp::ParameterValue(min_lookahead_dist)));
+  ctrl->configure(node, plugin_name, tf, costmap);
+
+  nav_msgs::msg::Path global_plan_in_base_frame;
+  global_plan_in_base_frame.poses.resize(5);
+  for (uint i = 0; i < global_plan_in_base_frame.poses.size(); i++) {
+    global_plan_in_base_frame.poses[i].pose.position.x = -static_cast<double>(i);  // Backwards
+  }
+
+  const double lookahead_dist = 0.5;
+  const auto pt = ctrl->getLookAheadPointWrapper(lookahead_dist, global_plan_in_base_frame);
+
+  // Carrot must be beside, not behind
+  EXPECT_GE(pt.pose.position.x, 0.0);
+  EXPECT_GE(pt.pose.position.y, min_lookahead_dist);
+}
+
 TEST(RegulatedPurePursuitTest, extended_collision_check_transform_check)
 {
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testRPP");
