@@ -319,6 +319,7 @@ protected:
   double rotate_to_heading_min_angular_vel_;
   double goal_yaw_tol_;
   double rotate_to_heading_proportional_gain_;
+  bool forward_only_carrot_;
 
   nav_msgs::msg::Path global_plan_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>> global_path_pub_;

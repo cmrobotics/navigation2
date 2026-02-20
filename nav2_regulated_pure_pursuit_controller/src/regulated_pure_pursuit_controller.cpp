@@ -130,6 +130,10 @@ void RegulatedPurePursuitController::configure(
     node, plugin_name_ + ".rotate_to_heading_proportional_gain",
     rclcpp::ParameterValue(10.0));
 
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".forward_only_carrot",
+    rclcpp::ParameterValue(false));
+
   node->get_parameter(plugin_name_ + ".desired_linear_vel", desired_linear_vel_);
   base_desired_linear_vel_ = desired_linear_vel_;
   node->get_parameter(plugin_name_ + ".lookahead_dist", lookahead_dist_);
@@ -201,6 +205,9 @@ void RegulatedPurePursuitController::configure(
   node->get_parameter(
     plugin_name_ + ".rotate_to_heading_proportional_gain",
     rotate_to_heading_proportional_gain_);
+  node->get_parameter(
+    plugin_name_ + ".forward_only_carrot",
+    forward_only_carrot_);
 
   transform_tolerance_ = tf2::durationFromSec(transform_tolerance);
   control_duration_ = 1.0 / control_frequency;
@@ -354,6 +361,7 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
   }
 
   auto carrot_pose = getLookAheadPoint(lookahead_dist, transformed_plan);
+
   carrot_pub_->publish(createCarrotMsg(carrot_pose));
 
   double linear_vel, angular_vel;
@@ -496,6 +504,7 @@ geometry_msgs::msg::PoseStamped RegulatedPurePursuitController::getLookAheadPoin
   const double & lookahead_dist,
   const nav_msgs::msg::Path & transformed_plan)
 {
+  geometry_msgs::msg::PoseStamped carrot_pose;
   // Find the first pose which is at a distance greater than the lookahead distance
   auto goal_pose_it = std::find_if(
     transformed_plan.poses.begin(), transformed_plan.poses.end(), [&](const auto & ps) {
@@ -504,7 +513,7 @@ geometry_msgs::msg::PoseStamped RegulatedPurePursuitController::getLookAheadPoin
 
   // If the no pose is not far enough, take the last pose
   if (goal_pose_it == transformed_plan.poses.end()) {
-    goal_pose_it = std::prev(transformed_plan.poses.end());
+    carrot_pose = *std::prev(transformed_plan.poses.end());
   } else if (use_interpolation_ && goal_pose_it != transformed_plan.poses.begin()) {
     // Find the point on the line segment between the two poses
     // that is exactly the lookahead distance away from the robot pose (the origin)
@@ -519,10 +528,19 @@ geometry_msgs::msg::PoseStamped RegulatedPurePursuitController::getLookAheadPoin
     pose.header.frame_id = prev_pose_it->header.frame_id;
     pose.header.stamp = goal_pose_it->header.stamp;
     pose.pose.position = point;
-    return pose;
+    carrot_pose = pose;
+  } else {
+    carrot_pose = *goal_pose_it;
   }
 
-  return *goal_pose_it;
+  if (forward_only_carrot_ && carrot_pose.pose.position.x < 0) {
+    carrot_pose.pose.position.x = 0;
+    if (std::abs(carrot_pose.pose.position.y) < min_lookahead_dist_) {
+      carrot_pose.pose.position.y = std::copysign(min_lookahead_dist_, carrot_pose.pose.position.y);
+    }
+  }
+
+  return carrot_pose;
 }
 
 bool RegulatedPurePursuitController::isCollisionImminentExtendedSearch()
