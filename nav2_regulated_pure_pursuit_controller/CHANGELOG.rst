@@ -2,6 +2,13 @@
 Changelog for package nav2_regulated_pure_pursuit_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#67 <https://github.com/cmrobotics/navigation2/issues/67>`_ from cmrobotics/improve-trolley-nav
+  SS-1354 RPP tight curves when carrot point behind
+* feat: tight curves when carrot behind
+* Contributors: Tanmay, Tanmay Deshmukh
+
 1.1.19 (2025-06-27)
 -------------------
 
