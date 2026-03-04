@@ -247,6 +247,7 @@ private:
 
   double inflation_radius_, inscribed_radius_, cost_scaling_factor_;
   bool inflate_unknown_, inflate_around_unknown_;
+  bool override_inscribed_radius_;
   unsigned int cell_inflation_radius_;
   unsigned int cached_cell_inflation_radius_;
   std::vector<std::vector<CellData>> inflation_cells_;
