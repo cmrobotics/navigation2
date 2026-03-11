@@ -64,6 +64,7 @@ InflationLayer::InflationLayer()
   cost_scaling_factor_(0),
   inflate_unknown_(false),
   inflate_around_unknown_(false),
+  override_inscribed_radius_(false),
   cell_inflation_radius_(0),
   cached_cell_inflation_radius_(0),
   resolution_(0),
@@ -90,6 +91,7 @@ InflationLayer::onInitialize()
   declareParameter("cost_scaling_factor", rclcpp::ParameterValue(10.0));
   declareParameter("inflate_unknown", rclcpp::ParameterValue(false));
   declareParameter("inflate_around_unknown", rclcpp::ParameterValue(false));
+  declareParameter("override_inscribed_radius", rclcpp::ParameterValue(false));
 
   {
     auto node = node_.lock();
@@ -101,6 +103,13 @@ InflationLayer::onInitialize()
     node->get_parameter(name_ + "." + "cost_scaling_factor", cost_scaling_factor_);
     node->get_parameter(name_ + "." + "inflate_unknown", inflate_unknown_);
     node->get_parameter(name_ + "." + "inflate_around_unknown", inflate_around_unknown_);
+    node->get_parameter(name_ + "." + "override_inscribed_radius", override_inscribed_radius_);
+
+    if (override_inscribed_radius_)
+    {
+        declareParameter("inscribed_radius", rclcpp::ParameterValue(0.0));
+        node->get_parameter(name_ + "." + "inscribed_radius", inscribed_radius_);
+    }
 
     dyn_params_handler_ = node->add_on_set_parameters_callback(
       std::bind(
@@ -165,7 +174,10 @@ void
 InflationLayer::onFootprintChanged()
 {
   std::lock_guard<Costmap2D::mutex_t> guard(*getMutex());
-  inscribed_radius_ = layered_costmap_->getInscribedRadius();
+
+  if (!override_inscribed_radius_) {
+    inscribed_radius_ = layered_costmap_->getInscribedRadius();
+  }
   cell_inflation_radius_ = cellDistance(inflation_radius_);
   computeCaches();
   need_reinflation_ = true;
