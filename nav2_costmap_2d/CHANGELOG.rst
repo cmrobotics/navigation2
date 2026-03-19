@@ -2,8 +2,8 @@
 Changelog for package nav2_costmap_2d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.21 (2026-03-19)
+-------------------
 * Merge pull request `#68 <https://github.com/cmrobotics/navigation2/issues/68>`_ from cmrobotics/inflation-override-inscribed-rad
   Support custom inscribed radius through param
 * feat: support custom inscribed radius through param
