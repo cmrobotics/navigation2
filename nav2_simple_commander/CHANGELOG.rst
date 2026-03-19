@@ -2,6 +2,9 @@
 Changelog for package nav2_simple_commander
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.20 (2026-02-23)
 -------------------
 

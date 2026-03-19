@@ -2,6 +2,9 @@
 Changelog for package nav2_regulated_pure_pursuit_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.20 (2026-02-23)
 -------------------
 * Merge pull request `#67 <https://github.com/cmrobotics/navigation2/issues/67>`_ from cmrobotics/improve-trolley-nav
